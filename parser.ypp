@@ -1,0 +1,466 @@
+%{    
+    #include <iostream>
+    #include <string>
+    #include <map>
+    #include <vector>
+    #include "./Vertex.hpp"
+    #include "./Types.hpp"
+    #include "parser.tab.hpp"
+    #include "ProgramStructure.hpp"
+    extern int yylex();
+    extern int yyparse();
+    int yyerror(std::string s);
+
+%}
+/* %define api.value.type variant
+%language "c++" */
+
+%code requires{
+    #include "./Vertex.hpp"
+    #include "./Types.hpp"
+    #include "ProgramStructure.hpp"
+    typedef struct Parser_token
+    {
+        uint64_t val;
+        uint64_t line;
+        std::string* str; // Yacc needs pointer instead of class
+    } Parser_token;
+}
+
+%union {
+    int intVal;
+
+    Parser_token ptoken;
+
+    Instruction* instPointer;
+    LinkedCommands* linkedPointer;
+
+    Procedure_head* procHeadPointer;
+
+    Value* valuePointer;
+    Declaration* declarationPointer;
+
+    Identifier* identPointer;
+
+    IndentifierArrNumber* arrNumPoint;
+    IndentifierArrPid* arrPidPoint;
+    Expression* exprPoint;
+    Condition* condPoint;
+    Main* mainPoint;
+
+    Args* argPointer;
+    Procedure_call* callPointer;
+    ProceduresAll* procAllPointer;
+
+    Program* programPointer;
+}
+
+%token SEMICOLON
+%token PLUS
+%token MINUS
+%token MULT
+%token DIV
+%token MOD
+%token EQ
+%token ASSIGN
+%token COMMA
+%token NEQ
+%token LESS
+%token LEQ
+%token MORE
+%token MEQ 
+%token LSQ 
+%token RSQ 
+%token LBR
+%token RBR
+
+%token NUM
+%token PIDENTIFIER
+
+%token PROCEDURE
+%token IS
+%token IN
+%token END
+%token IF
+%token THEN
+%token ELSE
+%token ENDIF
+%token WHILE
+%token DO
+%token ENDWHILE
+%token REPEAT
+%token UNTIL
+%token READ
+%token WRITE
+%token PROGRAM
+%token T
+%token INVALID_KEYWORD
+
+%token ERROR_INVALID_CHAR
+
+%type <ptoken>	SEMICOLON 
+%type <ptoken> 	PLUS
+%type <ptoken>	MINUS
+%type <ptoken>	MULT
+%type <ptoken>	DIV
+%type <ptoken>	MOD
+%type <ptoken>	EQ
+%type <ptoken>  ASSIGN
+%type <ptoken>	COMMA
+%type <ptoken>	NEQ
+%type <ptoken>	LESS
+%type <ptoken>	LEQ
+%type <ptoken>	MORE
+%type <ptoken>	MEQ 
+%type <ptoken> 	LSQ
+%type <ptoken>	RSQ
+%type <ptoken>	LBR
+%type <ptoken>	RBR
+%type <ptoken>	NUM
+%type <ptoken>	PIDENTIFIER
+%type <ptoken>  PROCEDURE
+%type <ptoken>	IN
+%type <ptoken>	IS
+%type <ptoken>	END
+%type <ptoken>	IF
+%type <ptoken>	THEN
+%type <ptoken>	ELSE 
+%type <ptoken> 	ENDIF
+%type <ptoken>	WHILE
+%type <ptoken>	DO
+%type <ptoken>	ENDWHILE
+%type <ptoken>	REPEAT
+%type <ptoken>	UNTIL
+%type <ptoken>  READ
+%type <ptoken>	WRITE
+%type <ptoken>	PROGRAM
+%type <ptoken>	T
+%type <ptoken>	INVALID_KEYWORD
+%type <ptoken>	ERROR_INVALID_CHAR
+
+%type <identPointer> identifier
+%type <valuePointer> value
+
+%type <instPointer> condition
+
+%type <exprPoint> expression
+
+%type <declarationPointer> declarations
+
+%type <instPointer> command
+
+%type <linkedPointer> commands
+
+%type <mainPoint> main
+
+%type <procHeadPointer> proc_head
+
+%type <argPointer> args
+
+%type <argPointer> args_decl
+
+%type <callPointer> proc_call
+
+%type <procAllPointer> procedures
+
+%type <programPointer> program_all
+%%
+
+program_all: procedures main {
+                    Program* program = new Program();
+                    program->main = $2;
+                    program->procedures = $1;
+                    $$=program;
+                    program->semantic();
+                }
+;
+procedures: procedures PROCEDURE proc_head IS declarations IN commands END {
+                    ProcedureComplex* proc = new ProcedureComplex();
+                    proc->head = $3;
+                    proc->comms = $7;
+                    proc->decs = $5;
+                    $1->addProc(proc);
+                    $$=$1;
+                }
+            | procedures PROCEDURE proc_head IS IN commands END {
+                    Procedure* proc = new Procedure();
+                    proc->head = $3;
+                    proc->comms = $6;
+                    $1->addProc(proc);
+                    $$=$1;
+                }
+            | %empty {
+                    ProceduresAll* proc = new ProceduresAll;
+                    $$=proc;
+                }
+;
+main:       PROGRAM IS declarations IN commands END {
+                    Main* main = new Main();
+                    main->decs = $3;
+                    main->comms = $5;
+                }
+            | PROGRAM IS IN commands END {
+                    Main* main = new Main();
+                    Declaration* dec = new Declaration();
+                    main->decs = dec;
+                    main->comms = $4;
+                }
+;
+commands:   commands command {
+                    $1->addInst($2);
+                    $$ = $1;
+                }
+            | command {
+                    LinkedCommands *linkedCommand = new LinkedCommands();
+                    linkedCommand->addInst($1);
+                    $$ = linkedCommand;
+                }
+;
+command:    identifier ASSIGN expression SEMICOLON {
+                    Assignment* assign = new Assignment();
+                    assign->expression = $3;
+                    assign->identifier = $1;
+                    $$ = assign;
+                }
+            | IF condition THEN commands ELSE commands ENDIF {
+                    Conditional *conditional = new Conditional();
+                    conditional->nextIfTrue = $4->getHead();
+                    conditional->nextIfFalse = $6->getHead();
+                    Instruction *merger = new Instruction();
+                    conditional->next = merger;
+                    $4->getTail()->next = merger;
+                    $6->getTail()->next = merger;
+                    $$ = merger;
+                    //delete($4);
+                    //delete($6);
+                }
+            | IF condition THEN commands ENDIF {
+                    ConditionalSimple *simp = new ConditionalSimple();
+                    Instruction *merger = new Instruction();
+                    simp->nextIfTrue = $4->getHead();
+                    simp->next = merger;
+                    $4->getTail()->next = merger;
+                    $$ = merger;
+                    //delete($4);
+                }
+            | WHILE condition DO commands ENDWHILE {
+                    ConditionalWhile *loop = new ConditionalWhile();
+                    loop->nextIfTrue = $4->getHead();
+                    $4->getTail()->next = loop;
+                    $$ = loop;
+                    //Merger niepotrzebny, bo bierzemy wskaznik na NEXT. 
+                    //delete($4);
+                }
+            | REPEAT commands UNTIL condition SEMICOLON {
+                    ConditionalRepeat *loop = new ConditionalRepeat();
+                    $$ = $2->getHead();
+                    $2->getTail()->next = loop;
+                    loop->nextIfTrue = $2->getHead();
+                    //delete($2);
+                }
+            | proc_call SEMICOLON {
+                    $$ = $1;
+                }
+            | READ identifier SEMICOLON {
+                    Read* reader = new Read();
+                    reader->ident = $2;
+                    $$=reader;
+                }
+            | WRITE value SEMICOLON {
+                    Write* writer = new Write();
+                    writer->val = $2;
+                    $$ = writer;
+                }
+;
+proc_head:  PIDENTIFIER LBR args_decl RBR {
+                    Procedure_head* head = new Procedure_head();
+                    head->args = $3;
+                    head->name = *$1.str;
+                    $$=head;
+                }
+;
+proc_call:  PIDENTIFIER LBR args RBR {
+                    Procedure_call* call = new Procedure_call();
+                    call->args = $3;
+                    call->name = *$1.str;
+                    $$=call;
+                }
+;
+declarations: declarations COMMA PIDENTIFIER {
+                    Identifier* ident = new Identifier();
+                    ident->val = *$3.str;
+                    $1->declare(ident);
+                    $$=$1;
+                }
+              | declarations COMMA PIDENTIFIER LSQ NUM RSQ {
+                    IndentifierArrNumber* ident = new IndentifierArrNumber();
+                    ident->address = std::to_string($5.val);
+                    ident->val = *$3.str;
+                    $1->declare(ident);
+                    $$=$1;
+                }
+              | PIDENTIFIER {
+                    Identifier* ident = new Identifier();
+                    ident->val = *$1.str;
+                    Declaration* dec = new Declaration();
+                    dec->declare(ident);
+                    $$=dec;
+                }
+              | PIDENTIFIER LSQ NUM RSQ {
+                    IndentifierArrNumber* ident = new IndentifierArrNumber();
+                    ident->address = std::to_string($3.val);
+                    ident->val = *$1.str;
+                    Declaration* dec = new Declaration();
+                    dec->declare(ident);
+                    $$=dec;
+                }
+;
+args_decl:  args_decl COMMA PIDENTIFIER {
+                    Identifier* ident = new Identifier();
+                    ident->val = *$3.str;
+                    $1->addArg(ident);
+                    $$ = $1;
+                }
+            | args_decl COMMA T PIDENTIFIER {
+                    IndentifierArrNumber* ident = new IndentifierArrNumber();
+                    ident->val = *$4.str;
+                    $1->addArg(ident);
+                    $$ = $1;
+                }
+            | PIDENTIFIER {
+                    Identifier* ident = new Identifier();
+                    ident->val = *$1.str;
+                    Args* args = new Args();
+                    args->addArg(ident);
+                    $$ = args;
+                }
+            | T PIDENTIFIER {
+                    IndentifierArrNumber* ident = new IndentifierArrNumber();
+                    ident->val = *$2.str;
+                    Args* args = new Args();
+                    args->addArg(ident);
+                    $$ = args;
+                }
+;
+args:       args COMMA PIDENTIFIER {
+                    Identifier* ident = new Identifier();
+                    ident->val = *$3.str;
+                    $1->addArg(ident);
+                    $$=$1;
+                }
+            | PIDENTIFIER {
+                    Identifier* ident = new Identifier();
+                    ident->val = *$1.str;
+                    Args* args = new Args();
+                    args->addArg(ident);
+                    $$=args;
+                }
+;
+expression: value {
+                ExprSimple* simp = new ExprSimple();
+                simp->left = $1;
+                $$ = simp;
+            }
+            | value PLUS value {
+                ExprComplex* comp = new ExprComplex();
+                comp->left = $1;
+                comp->right = $3;
+                comp->operand = "+";
+            }
+            | value MINUS value {
+                ExprComplex* comp = new ExprComplex();
+                comp->left = $1;
+                comp->right = $3;
+                comp->operand = "-";
+            }
+            | value MULT value {
+                ExprComplex* comp = new ExprComplex();
+                comp->left = $1;
+                comp->right = $3;
+                comp->operand = "*";
+            }
+            | value DIV value {
+                ExprComplex* comp = new ExprComplex();
+                comp->left = $1;
+                comp->right = $3;
+                comp->operand = "/";
+            }
+            | value MOD value {
+                ExprComplex* comp = new ExprComplex();
+                comp->left = $1;
+                comp->right = $3;
+                comp->operand = "%";
+            }
+;
+condition:  value EQ value {
+                Condition* cond = new Condition();
+                cond->leftVal = $1;
+                cond->rightVal = $3;
+                cond->operand = "=";
+            }
+            | value NEQ value {
+                Condition* cond = new Condition();
+                cond->leftVal = $1;
+                cond->rightVal = $3;
+                cond->operand = "!=";
+            }
+            | value LESS value {
+                Condition* cond = new Condition();
+                cond->leftVal = $1;
+                cond->rightVal = $3;
+                cond->operand = "<";
+            }
+            | value MORE value {
+                Condition* cond = new Condition();
+                cond->leftVal = $1;
+                cond->rightVal = $3;
+                cond->operand = ">";
+            }
+            | value LEQ value {
+                Condition* cond = new Condition();
+                cond->leftVal = $1;
+                cond->rightVal = $3;
+                cond->operand = "<=";
+            }
+            | value MEQ value {
+                Condition* cond = new Condition();
+                cond->leftVal = $1;
+                cond->rightVal = $3;
+                cond->operand = ">=";
+            }
+;
+value:      NUM {
+                Number* num = new Number();
+                num->val = std::to_string($1.val);
+                $$=num;
+            }
+            | identifier{ $$ = $1; }
+;
+identifier: PIDENTIFIER {
+                    Identifier* ident = new Identifier();
+                    ident->val = *$1.str;
+                    $$=ident;
+                }
+            | PIDENTIFIER LSQ NUM RSQ {
+                    IndentifierArrNumber* ident = new IndentifierArrNumber();
+                    ident->val = *$1.str;
+                    ident->address = std::to_string($3.val);
+                    $$ = ident;
+                }
+            | PIDENTIFIER LSQ PIDENTIFIER RSQ {
+                    IndentifierArrPid* ident = new IndentifierArrPid();
+                    ident->val = *$1.str;
+                    ident->address = *$3.str;
+                    $$ = ident;
+                }
+;
+%%
+
+int yyerror(std::string s) {
+    std::cerr << "Error: " << s << std::endl;
+}
+
+int main() {
+    yyparse();
+    return 0;
+}
