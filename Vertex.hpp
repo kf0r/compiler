@@ -92,15 +92,14 @@ public:
 class Procedure{
 public:
     std::map<std::string, Variable*> symbolTable;
-    std::map<std::string, Variable*> declarationTable;
+    std::map<std::string, Variable*> callableTable;
     Procedure_head* head;
     LinkedCommands* comms;
-    Declaration* decs = nullptr;
+    Declaration* decs;
 };
 
 class ProcedureComplex: public Procedure{
 public:
-   Declaration* decs;
 };
 
 class ProceduresAll{

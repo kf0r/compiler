@@ -1,7 +1,8 @@
 #include "./Types.hpp"
-
+#include <iostream>
 bool Declaration::declare(Identifier* var){
-    decs.push_back(var);
+    decsVec.push_back(var);
+    ///std::cout<<var->val<<std::endl;
 }
 
 bool Args::addArg(Identifier* var){

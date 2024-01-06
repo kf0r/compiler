@@ -186,6 +186,7 @@ procedures: procedures PROCEDURE proc_head IS declarations IN commands END {
                     Procedure* proc = new Procedure();
                     proc->head = $3;
                     proc->comms = $6;
+                    proc->decs=nullptr;
                     $1->addProc(proc);
                     $$=$1;
                 }

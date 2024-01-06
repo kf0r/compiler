@@ -56,7 +56,7 @@ public:
 
 class Declaration{
 public:
-    std::vector<Identifier*> decs;
+    std::vector<Identifier*> decsVec;
     bool declare(Identifier* var);
 };
 

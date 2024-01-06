@@ -1,5 +1,5 @@
 #include "./Vertex.hpp"
-
+#include <iostream>
 LinkedCommands::LinkedCommands(){
     LinkedCommands::head=nullptr;
     LinkedCommands::tail=nullptr;
