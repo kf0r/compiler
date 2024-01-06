@@ -5,9 +5,11 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <map>
 
 class Program{
-public:
+public: 
+    std::map<std::string, Procedure*> proceduresTable; 
     ProceduresAll* procedures;
     Main* main;
     bool semantic();

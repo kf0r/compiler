@@ -8,6 +8,7 @@
 
 class Instruction{
 public:
+    bool visited = false; //variable for DFS during semantic analisys
     Instruction();
     bool isConditional = false;
     unsigned int index;
@@ -77,7 +78,7 @@ public:
     Instruction* tail;
 
     LinkedCommands();
-    void addInst(Instruction* inst); //Przejsc po nextach inst az bedzie null i ten bedzie tailem byq
+    void addInst(Instruction* inst); //Przejsc po nextach inst az bedzie null i ten bedzie tailem 
     Instruction* getHead();
     Instruction* getTail(); 
 };

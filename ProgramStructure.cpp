@@ -3,8 +3,22 @@
 // CAN BE OPTIMIZED USING SETS BUT NOW I HAVE MORE IMPORTANT THINGS TO DO
 bool Program::semantic(){
     bool success = true;
+
+    //////////////////////////////////////////////////////////////////////////////
+    // REDECLARATION MANAGEMENT
+    //////////////////////////////////////////////////////////////////////////////
+    
     for (int i = 0; i<procedures->procedures.size(); i++){
+
         auto& currentProcedure = *(procedures->procedures[i]);
+        for (auto pair : proceduresTable){
+            if(currentProcedure.head->name == pair.first){
+                std::cout<<"Redeklaracja procedury "<<currentProcedure.head->name<<std::endl;
+                success = false;
+            }
+        }
+        proceduresTable.insert(std::pair<std::string, Procedure*> (currentProcedure.head->name, &currentProcedure));
+
         std::vector<Identifier*>& argsVector = currentProcedure.head->args->argsVec;
 
         for(int j=0; j<argsVector.size(); j++){
@@ -63,5 +77,10 @@ bool Program::semantic(){
             main->symbolTable.insert(std::pair<std::string, Variable*> (name, var));
         }
     }
+
+    //////////////////////////////////////////////////////////////////////////////
+    // CHECKING IF ALL VARIABLES ARE DECLARED AND MANAGED CORRECTLY
+    //////////////////////////////////////////////////////////////////////////////
+
 
 }
