@@ -45,7 +45,7 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 18 "parser.ypp"
+#line 17 "parser.ypp"
 
     #include "./Vertex.hpp"
     #include "./Types.hpp"
@@ -54,7 +54,7 @@ extern int yydebug;
     {
         uint64_t val;
         uint64_t line;
-        std::string* str; // Yacc needs pointer instead of class
+        std::string* str; 
     } Parser_token;
 
 #line 61 "parser.tab.hpp"
@@ -115,7 +115,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 30 "parser.ypp"
+#line 29 "parser.ypp"
 
     int intVal;
 

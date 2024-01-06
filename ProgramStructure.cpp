@@ -1,5 +1,6 @@
 #include "./ProgramStructure.hpp"
 
+// CAN BE OPTIMIZED USING SETS BUT NOW I HAVE MORE IMPORTANT THINGS TO DO
 bool Program::semantic(){
     bool success = true;
     for (int i = 0; i<procedures->procedures.size(); i++){
@@ -17,7 +18,7 @@ bool Program::semantic(){
             }
             Variable* var = new Variable;
             var->id=name;
-            //////// MANAGE MEMORY
+            //////// MANAGE MEMORY 
             currentProcedure.callableTable.insert(std::pair<std::string, Variable*> (name, var));
         }
 
@@ -39,15 +40,28 @@ bool Program::semantic(){
                 }
                 Variable* var = new Variable;
                 var->id=name;
-                //////// MANAGE MEMORY
+                //////// MANAGE MEMORY 
                 currentProcedure.symbolTable.insert(std::pair<std::string, Variable*> (name, var));
             }
         }
 
-        procedures->procedures[i]->decs;
     }
 
-    //std::vector<Identifier*>& decsVector = main->decs->decsVec;
-
+    if(main->decs!=nullptr){
+        std::vector<Identifier*>& decsVector = main->decs->decsVec;
+        for(int i=0; i<decsVector.size(); i++){
+            std::string name = decsVector[i]->val;
+            for(auto pair : main->symbolTable){
+                if(name == pair.first){
+                    std::cout<<"Redeklaracja zmiennej "<<name<<std::endl;
+                    success = false;
+                }
+            }
+            Variable* var = new Variable;
+            var->id=name;
+            //////// MANAGE MEMORY
+            main->symbolTable.insert(std::pair<std::string, Variable*> (name, var));
+        }
+    }
 
 }

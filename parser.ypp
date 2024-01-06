@@ -12,8 +12,7 @@
     int yyerror(std::string s);
 
 %}
-/* %define api.value.type variant
-%language "c++" */
+
 
 %code requires{
     #include "./Vertex.hpp"
@@ -23,7 +22,7 @@
     {
         uint64_t val;
         uint64_t line;
-        std::string* str; // Yacc needs pointer instead of class
+        std::string* str; 
     } Parser_token;
 }
 
@@ -199,12 +198,14 @@ main:       PROGRAM IS declarations IN commands END {
                     Main* main = new Main();
                     main->decs = $3;
                     main->comms = $5;
+                    $$=main;
                 }
             | PROGRAM IS IN commands END {
                     Main* main = new Main();
-                    Declaration* dec = new Declaration();
-                    main->decs = dec;
+                    //Declaration* dec = new Declaration();
+                    main->decs = nullptr;
                     main->comms = $4;
+                    $$=main;
                 }
 ;
 commands:   commands command {
