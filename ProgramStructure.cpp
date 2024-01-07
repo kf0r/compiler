@@ -1,4 +1,7 @@
 #include "./ProgramStructure.hpp"
+#include <stack>
+#include <iostream>
+
 
 // CAN BE OPTIMIZED USING SETS BUT NOW I HAVE MORE IMPORTANT THINGS TO DO
 bool Program::semantic(){
@@ -32,7 +35,7 @@ bool Program::semantic(){
             }
             Variable* var = new Variable;
             var->id=name;
-            //////// MANAGE MEMORY 
+            //////// MANAGE MEMORY, SET OFFSETS itd 
             currentProcedure.callableTable.insert(std::pair<std::string, Variable*> (name, var));
         }
 
@@ -59,6 +62,53 @@ bool Program::semantic(){
             }
         }
 
+        //////////////////////////////////////////////////////////////////////////////
+        // CHECKING IF ALL VARIABLES ARE DECLARED AND MANAGED CORRECTLY
+        //////////////////////////////////////////////////////////////////////////////
+
+        std::stack<Instruction*> instStack;
+        instStack.push(currentProcedure.comms->getHead());
+        while(!instStack.empty()){
+            Instruction* top = instStack.top();
+            instStack.pop();
+
+            if(!top->visited){
+                std::vector<std::string> names = top->getVars();
+
+                for(int j=0; j<names.size();j++){
+                    bool wasDeclared = false;
+                    std::string name = names[j];
+
+                    for (auto pair : currentProcedure.callableTable){
+                        if(name == pair.first){
+                            wasDeclared=true;
+                        }
+                    }
+
+                    for (auto pair : currentProcedure.symbolTable){
+                        if(name == pair.first){
+                            wasDeclared=true;
+                        }
+                    }
+
+                    if(!wasDeclared){
+                        success=false;
+                        std::cout<<"Uzycie nieznanej zmiennej "<<name<<" w "<<currentProcedure.head->name<<std::endl;
+                    }
+
+                }
+                top->visited=true;
+                //yep could be refactored to keep vector of instructions pointers but its cosmetics
+                for(int j=0; j<top->getNext().size();j++){
+                    if(top->getNext()[j]!=nullptr){
+                        if(!top->getNext()[j]->visited){
+                            instStack.push(top->getNext()[j]);
+                        }
+                    }
+                }
+            }
+        }
+
     }
 
     if(main->decs!=nullptr){
@@ -78,9 +128,47 @@ bool Program::semantic(){
         }
     }
 
-    //////////////////////////////////////////////////////////////////////////////
-    // CHECKING IF ALL VARIABLES ARE DECLARED AND MANAGED CORRECTLY
-    //////////////////////////////////////////////////////////////////////////////
+    /*Maybe write function void DFS(&inst, message)? idk, it wouldnt be better, because DFS for procedures has to go through
+    callableTable. But i could add callableTable in main as a empty map? Nah, i'll stay with this solution now :)*/
+    std::stack<Instruction*> instStack;
+    instStack.push(main->comms->getHead());
+    while(!instStack.empty()){
+        Instruction* top = instStack.top();
+        instStack.pop();
 
+        if(!top->visited){
+            std::vector<std::string> names = top->getVars();
+
+            for(int j=0; j<names.size();j++){
+                bool wasDeclared = false;
+                std::string name = names[j];
+
+                for (auto pair : main->symbolTable){
+                    if(name == pair.first){
+                        wasDeclared=true;
+                    }
+                }
+
+                if(!wasDeclared){
+                    success=false;
+                    std::cout<<"Uzycie nieznanej zmiennej "<<name<<std::endl;
+                }
+
+            }
+            top->visited=true;
+
+            for(int j=0; j<top->getNext().size();j++){
+                if(top->getNext()[j]!=nullptr){
+                    if(!top->getNext()[j]->visited){
+                        instStack.push(top->getNext()[j]);
+                    }
+                }
+            }
+        }
+    }
+
+    
+
+    
 
 }

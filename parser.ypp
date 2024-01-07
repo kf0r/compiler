@@ -140,7 +140,7 @@
 %type <identPointer> identifier
 %type <valuePointer> value
 
-%type <instPointer> condition
+%type <condPoint> condition
 
 %type <exprPoint> expression
 
@@ -226,6 +226,7 @@ command:    identifier ASSIGN expression SEMICOLON {
                 }
             | IF condition THEN commands ELSE commands ENDIF {
                     Conditional *conditional = new Conditional();
+                    conditional->cond = $2;
                     conditional->nextIfTrue = $4->getHead();
                     conditional->nextIfFalse = $6->getHead();
                     Instruction *merger = new Instruction();
@@ -238,6 +239,7 @@ command:    identifier ASSIGN expression SEMICOLON {
                 }
             | IF condition THEN commands ENDIF {
                     ConditionalSimple *simp = new ConditionalSimple();
+                    simp->cond = $2;
                     Instruction *merger = new Instruction();
                     simp->nextIfTrue = $4->getHead();
                     simp->next = merger;
@@ -247,6 +249,7 @@ command:    identifier ASSIGN expression SEMICOLON {
                 }
             | WHILE condition DO commands ENDWHILE {
                     ConditionalWhile *loop = new ConditionalWhile();
+                    loop->cond = $2;
                     loop->nextIfTrue = $4->getHead();
                     $4->getTail()->next = loop;
                     $$ = loop;
@@ -255,6 +258,7 @@ command:    identifier ASSIGN expression SEMICOLON {
                 }
             | REPEAT commands UNTIL condition SEMICOLON {
                     ConditionalRepeat *loop = new ConditionalRepeat();
+                    loop->cond=$4;
                     $$ = $2->getHead();
                     $2->getTail()->next = loop;
                     loop->nextIfTrue = $2->getHead();
@@ -368,30 +372,35 @@ expression: value {
                 comp->left = $1;
                 comp->right = $3;
                 comp->operand = "+";
+                $$ = comp;
             }
             | value MINUS value {
                 ExprComplex* comp = new ExprComplex();
                 comp->left = $1;
                 comp->right = $3;
                 comp->operand = "-";
+                $$ = comp;
             }
             | value MULT value {
                 ExprComplex* comp = new ExprComplex();
                 comp->left = $1;
                 comp->right = $3;
                 comp->operand = "*";
+                $$ = comp;
             }
             | value DIV value {
                 ExprComplex* comp = new ExprComplex();
                 comp->left = $1;
                 comp->right = $3;
                 comp->operand = "/";
+                $$ = comp;
             }
             | value MOD value {
                 ExprComplex* comp = new ExprComplex();
                 comp->left = $1;
                 comp->right = $3;
                 comp->operand = "%";
+                $$ = comp;
             }
 ;
 condition:  value EQ value {
@@ -399,36 +408,42 @@ condition:  value EQ value {
                 cond->leftVal = $1;
                 cond->rightVal = $3;
                 cond->operand = "=";
+                $$ = cond;
             }
             | value NEQ value {
                 Condition* cond = new Condition();
                 cond->leftVal = $1;
                 cond->rightVal = $3;
                 cond->operand = "!=";
+                $$ = cond;
             }
             | value LESS value {
                 Condition* cond = new Condition();
                 cond->leftVal = $1;
                 cond->rightVal = $3;
                 cond->operand = "<";
+                $$ = cond;
             }
             | value MORE value {
                 Condition* cond = new Condition();
                 cond->leftVal = $1;
                 cond->rightVal = $3;
                 cond->operand = ">";
+                $$ = cond;
             }
             | value LEQ value {
                 Condition* cond = new Condition();
                 cond->leftVal = $1;
                 cond->rightVal = $3;
                 cond->operand = "<=";
+                $$ = cond;
             }
             | value MEQ value {
                 Condition* cond = new Condition();
                 cond->leftVal = $1;
                 cond->rightVal = $3;
                 cond->operand = ">=";
+                $$ = cond;
             }
 ;
 value:      NUM {

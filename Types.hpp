@@ -9,21 +9,25 @@
 class Value{
 public:
     std::string val;
-    bool isArray = false;
+    bool isArray = false; /////TODO: WYWALIC I ZAMIENIC NA FUNKCJE WIRTUALNA ZWRACAJACA NWM HGW CO
+    virtual std::string getVar();
 };
 
 class Number: public Value{
-
+public:
+    //std::string getVar();
 };
 
 class Identifier: public Value{
-    
+public:
+    virtual std::string getVar();
 };
 
 class IndentifierArrNumber: public Identifier{
 public:
     bool isArray = true;
     std::string address;
+    
 };
 
 class IndentifierArrPid: public Identifier{
@@ -35,6 +39,7 @@ public:
 class Expression{
 public:
     Value* left;
+    Value* right=nullptr;
 };
 
 class ExprSimple: public Expression{
@@ -43,7 +48,7 @@ class ExprSimple: public Expression{
 
 class ExprComplex: public Expression{
 public:
-    Value* right;
+    
     std::string operand;
 };
 

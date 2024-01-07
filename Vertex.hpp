@@ -8,32 +8,29 @@
 
 class Instruction{
 public:
-    bool visited = false; //variable for DFS during semantic analisys
     Instruction();
+    bool visited = false; //variable for DFS during semantic analisys
     bool isConditional = false;
     unsigned int index;
     Instruction* next;
-};
 
-class Conditional: public Instruction{
-public:
-    bool isConditional = true;
-    Instruction* nextIfFalse;
-    Instruction* nextIfTrue;
-    std::string type;
-    std::string left;
-    std::string evaluator;
-    std::string right;
+    virtual std::vector<std::string> getVars();
+    virtual std::vector<Instruction*> getNext();
 };
 
 class ConditionalSimple: public Instruction{
 public:
     bool isConditional = true;
     Instruction* nextIfTrue;
-    std::string type;
-    std::string left;
-    std::string evaluator;
-    std::string right;
+    Condition* cond;
+    std::vector<std::string> getVars();
+    virtual std::vector<Instruction*> getNext();
+};
+
+class Conditional: public ConditionalSimple{
+public:
+    Instruction* nextIfFalse;
+    std::vector<Instruction*> getNext();
 };
 
 class ConditionalWhile: public ConditionalSimple{
@@ -44,32 +41,34 @@ class ConditionalRepeat: public ConditionalSimple{
 
 };
 
-// class AssignmentSimple: Instruction{
-// public:
-//     std::string target;
-//     std::string left;
-// };
-
 class Assignment: public Instruction{
 public:
     Expression* expression;
     Identifier* identifier;
+
+    std::vector<std::string> getVars();
 };
 
 class Procedure_call: public Instruction{
 public:
     Args* args;
     std::string name;
+
+    std::vector<std::string> getVars();
 };
 
 class Write: public Instruction{
 public:
     Value* val;
+
+    std::vector<std::string> getVars();
 };
 
 class Read: public Instruction{
 public:
     Identifier* ident;
+
+    std::vector<std::string> getVars();
 };
 
 class LinkedCommands{
