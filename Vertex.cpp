@@ -2,8 +2,8 @@
 #include <iostream>
 #include <vector>
 
-std::vector<std::string> Instruction::getVars(){
-    std::vector<std::string> empty;
+std::vector<Value*> Instruction::getVars(){
+    std::vector<Value*> empty;
     return empty;
 }
 
@@ -13,14 +13,14 @@ std::vector<Instruction*> Instruction::getNext(){
     return nexts;
 }
 
-std::vector<std::string> ConditionalSimple::getVars(){
-    std::vector<std::string> vars;
+std::vector<Value*> ConditionalSimple::getVars(){
+    std::vector<Value*> vars;
     //if value is a number, getVar returns empty string. Its strictly for semantic analisys
-    if(cond->leftVal->getVar()!=""){
-        vars.push_back(cond->leftVal->getVar());
+    if(cond->leftVal->getIdentifier()!=nullptr){
+        vars.push_back(cond->leftVal);
     }
-    if(cond->rightVal->getVar()!=""){
-        vars.push_back(cond->rightVal->getVar());
+    if(cond->rightVal->getIdentifier()!=nullptr){
+        vars.push_back(cond->rightVal);
     }
     
     return vars;
@@ -43,45 +43,43 @@ std::vector<Instruction*> Conditional::getNext(){
 }
 
 
-std::vector<std::string> Assignment::getVars(){
-    std::vector<std::string> vars;
-    if(identifier->getVar()!=""){
-        vars.push_back(identifier->getVar());
-    }
+std::vector<Value*> Assignment::getVars(){
+    std::vector<Value*> vars;
+    vars.push_back(identifier);
     //std::cout<<expression->left->getVar()<<std::endl;
-    if(expression->left->getVar()!=""){
-        vars.push_back(expression->left->getVar());
+    if(expression->left->getIdentifier()!=nullptr){
+        vars.push_back(expression->left->getIdentifier());
     }
     if(expression->right!=nullptr ){
         /*not sure if i can do it `if(expression->right!=nullptr && expression->right->getVar()!="")`, if second condition would be checked
         too what would result in segmentation fault so I'll nest this condition*/
-        if(expression->right->getVar()!=""){
-            vars.push_back(expression->right->getVar());
+        if(expression->right->getIdentifier()!=nullptr){
+            vars.push_back(expression->right->getIdentifier());
         }
     }
     return vars;
 }
 
-std::vector<std::string> Procedure_call::getVars(){
-    std::vector<std::string> vars;
+std::vector<Value*> Procedure_call::getVars(){
+    std::vector<Value*> vars;
     for(int i=0; i<args->argsVec.size(); i++){
         //provided grammar says that arguments for function are variables
-        vars.push_back(args->argsVec[i]->val);
+        vars.push_back(args->argsVec[i]);
     }
     return vars;
 }
 
-std::vector<std::string> Write::getVars(){
-    std::vector<std::string> vars;
-    if(val->getVar()!=""){
-        vars.push_back(val->getVar());
+std::vector<Value*> Write::getVars(){
+    std::vector<Value*> vars;
+    if(val->getIdentifier()!=nullptr){
+        vars.push_back(val->getIdentifier());
     }
     return vars;
 }
 
-std::vector<std::string> Read::getVars(){
-    std::vector<std::string> vars;
-    vars.push_back(ident->val);
+std::vector<Value*> Read::getVars(){
+    std::vector<Value*> vars;
+    vars.push_back(ident);
     return vars;
 }
 

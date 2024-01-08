@@ -5,12 +5,13 @@
 #include <string>
 #include <vector>
 #include <set>
+class Identifier;
 
 class Value{
 public:
     std::string val;
-    bool isArray = false; /////TODO: WYWALIC I ZAMIENIC NA FUNKCJE WIRTUALNA ZWRACAJACA NWM HGW CO
-    virtual std::string getVar();
+    //bool isArray = false; /////TODO: WYWALIC I ZAMIENIC NA FUNKCJE WIRTUALNA ZWRACAJACA NWM HGW CO
+    virtual Identifier* getIdentifier();
 };
 
 class Number: public Value{
@@ -20,20 +21,26 @@ public:
 
 class Identifier: public Value{
 public:
-    virtual std::string getVar();
+    virtual Identifier* getIdentifier();
+    virtual unsigned long long getOffset();
+    virtual bool isArray();
 };
 
 class IndentifierArrNumber: public Identifier{
 public:
-    bool isArray = true;
+    //bool isArray = true;
+    Identifier* getIdentifier();
     std::string address;
-    
+    unsigned long long getOffset();
+    bool isArray();
 };
 
 class IndentifierArrPid: public Identifier{
 public:
-    bool isArray = true;
+    //bool isArray = true;
+    Identifier* getIdentifier();
     std::string address;
+    bool isArray();
 };
 
 class Expression{
@@ -81,9 +88,10 @@ public:
 class Variable{
 public:
     std::string id;
-    bool isInitialized;
+    bool isInitialized=false;
+    bool isOffsettable=false;
     unsigned long long adress;
-    unsigned long long offset;
+    unsigned long long offset = 0;
 };
 
 #endif

@@ -4,6 +4,7 @@
 
 
 // CAN BE OPTIMIZED USING SETS BUT NOW I HAVE MORE IMPORTANT THINGS TO DO
+// MAYBE ALSO REFACTORED TO MORE SUBPROCEDURES TO BE EASIER TO MANTAIN
 bool Program::semantic(){
     bool success = true;
 
@@ -24,6 +25,9 @@ bool Program::semantic(){
 
         std::vector<Identifier*>& argsVector = currentProcedure.head->args->argsVec;
 
+        ///////////////////////////////////////////////
+        //ARGUMENTS
+        ///////////////////////////////////////////////
         for(int j=0; j<argsVector.size(); j++){
             std::string name = argsVector[j]->val;
             for (auto pair : currentProcedure.callableTable){
@@ -35,10 +39,16 @@ bool Program::semantic(){
             }
             Variable* var = new Variable;
             var->id=name;
+            if(argsVector[j]->isArray()){
+                var->isOffsettable=true;
+            }
             //////// MANAGE MEMORY, SET OFFSETS itd 
             currentProcedure.callableTable.insert(std::pair<std::string, Variable*> (name, var));
         }
 
+        ///////////////////////////////////////////////
+        //DECLARATIONS
+        ///////////////////////////////////////////////
         if(currentProcedure.decs!=nullptr){
             std::vector<Identifier*>& decsVector = currentProcedure.decs->decsVec;
             for(int j=0; j<decsVector.size(); j++){
@@ -57,6 +67,11 @@ bool Program::semantic(){
                 }
                 Variable* var = new Variable;
                 var->id=name;
+                var->offset = decsVector[j]->getOffset();
+                if(decsVector[j]->isArray()){
+                    var->isOffsettable=true;
+                }
+
                 //////// MANAGE MEMORY 
                 currentProcedure.symbolTable.insert(std::pair<std::string, Variable*> (name, var));
             }
@@ -73,29 +88,36 @@ bool Program::semantic(){
             instStack.pop();
 
             if(!top->visited){
-                std::vector<std::string> names = top->getVars();
+                std::vector<Value*> identifiers = top->getVars();
+                //std::vector<Identifier*> identifiers = top->getIdentifiers(); //TODO
 
-                for(int j=0; j<names.size();j++){
+                for(int j=0; j<identifiers.size();j++){
                     bool wasDeclared = false;
-                    std::string name = names[j];
+                    std::string name = identifiers[j]->val;
 
-                    for (auto pair : currentProcedure.callableTable){
-                        if(name == pair.first){
-                            wasDeclared=true;
-                        }
-                    }
+                    // for (auto pair : currentProcedure.callableTable){
+                    //     if(name == pair.first){
+                    //         wasDeclared=true;
+                    //     }
+                    // }
 
-                    for (auto pair : currentProcedure.symbolTable){
-                        if(name == pair.first){
-                            wasDeclared=true;
-                        }
-                    }
+                    // for (auto pair : currentProcedure.symbolTable){
+                    //     if(name == pair.first){
+                    //         wasDeclared=true;
+                    //     }
+                    // }
 
-                    if(!wasDeclared){
-                        success=false;
+                    //Checking redeclarations
+                    if(!currentProcedure.symbolTable[name]&&!currentProcedure.callableTable[name]){
+                        success = false;
                         std::cout<<"Uzycie nieznanej zmiennej "<<name<<" w "<<currentProcedure.head->name<<std::endl;
+                    }else{
+                        //Checking if variables are used correctly
+
+
                     }
 
+                    
                 }
                 top->visited=true;
                 //yep could be refactored to keep vector of instructions pointers but its cosmetics
@@ -111,6 +133,9 @@ bool Program::semantic(){
 
     }
 
+    ///////////////////////////////////////////////
+    //MAIN
+    ///////////////////////////////////////////////
     if(main->decs!=nullptr){
         std::vector<Identifier*>& decsVector = main->decs->decsVec;
         for(int i=0; i<decsVector.size(); i++){
@@ -123,6 +148,7 @@ bool Program::semantic(){
             }
             Variable* var = new Variable;
             var->id=name;
+            var->offset = decsVector[i]->getOffset();
             //////// MANAGE MEMORY
             main->symbolTable.insert(std::pair<std::string, Variable*> (name, var));
         }
@@ -137,21 +163,23 @@ bool Program::semantic(){
         instStack.pop();
 
         if(!top->visited){
-            std::vector<std::string> names = top->getVars();
+            std::vector<Value*> identifiers = top->getVars();
 
-            for(int j=0; j<names.size();j++){
+            for(int j=0; j<identifiers.size();j++){
                 bool wasDeclared = false;
-                std::string name = names[j];
+                std::string name = identifiers[j]->val;
 
-                for (auto pair : main->symbolTable){
-                    if(name == pair.first){
-                        wasDeclared=true;
-                    }
-                }
+                // for (auto pair : main->symbolTable){
+                //     if(name == pair.first){
+                //         wasDeclared=true;
+                //     }
+                // }
 
-                if(!wasDeclared){
+                if(!main->symbolTable[name]){
                     success=false;
                     std::cout<<"Uzycie nieznanej zmiennej "<<name<<std::endl;
+                }else{
+                    //Checking if variables are used correctly
                 }
 
             }

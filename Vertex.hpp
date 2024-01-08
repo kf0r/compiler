@@ -14,7 +14,7 @@ public:
     unsigned int index;
     Instruction* next;
 
-    virtual std::vector<std::string> getVars();
+    virtual std::vector<Value*> getVars();
     virtual std::vector<Instruction*> getNext();
 };
 
@@ -23,7 +23,7 @@ public:
     bool isConditional = true;
     Instruction* nextIfTrue;
     Condition* cond;
-    std::vector<std::string> getVars();
+    std::vector<Value*> getVars();
     virtual std::vector<Instruction*> getNext();
 };
 
@@ -46,7 +46,7 @@ public:
     Expression* expression;
     Identifier* identifier;
 
-    std::vector<std::string> getVars();
+    std::vector<Value*> getVars();
 };
 
 class Procedure_call: public Instruction{
@@ -54,21 +54,20 @@ public:
     Args* args;
     std::string name;
 
-    std::vector<std::string> getVars();
+    std::vector<Value*> getVars();
 };
 
 class Write: public Instruction{
 public:
     Value* val;
 
-    std::vector<std::string> getVars();
+    std::vector<Value*> getVars();
 };
 
 class Read: public Instruction{
 public:
     Identifier* ident;
-
-    std::vector<std::string> getVars();
+    std::vector<Value*> getVars();
 };
 
 class LinkedCommands{
