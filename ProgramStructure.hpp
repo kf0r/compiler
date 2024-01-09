@@ -13,7 +13,8 @@ public:
     ProceduresAll* procedures;
     Main* main;
 
-    //bool validateCall(Procedure_call* call,Program_part* currentPart);
+    bool validateCallMain(Procedure_call* call);
+    bool validateCallProc(Procedure_call* call, Procedure* current);
     bool semantic();
 };
 

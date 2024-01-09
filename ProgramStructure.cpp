@@ -2,23 +2,93 @@
 #include <stack>
 #include <iostream>
 
-// bool Program::validateCall(Procedure_call* call, Program_part* currentPart){
-//     if(!proceduresTable[call->name]){
-//         return false;
-//     }else{
-//         Procedure* called = proceduresTable[call->name];
-//         if(called->head->args->argsVec.size()!=call->args->argsVec.size()){
-//             std::cout<<"Nieprawidłowa ilość argumentow wywolania "<<call->name;
-//             if(Procedure* proc = dynamic_cast<Procedure*>(currentPart)){
+bool Program::validateCallProc(Procedure_call* call, Procedure* current){
+    if(!proceduresTable[call->name]){
+        std::cout<<"Wywołanie nieznanej funkcji "<<call->name<<" w "<<current->head->name<<std::endl; 
+        return false;
+    }
+    if(proceduresTable[call->name]->head->args->argsVec.size()!=call->args->argsVec.size()){
+        std::cout<<"Nieprawidłowa ilość argumentow funkcji " <<call->name<<" w "<<current->head->name<<std::endl;
+        return false;
+    }
+    for(int i=0; i<proceduresTable[call->name]->head->args->argsVec.size(); i++){
+        Identifier* inCalled = proceduresTable[call->name]->head->args->argsVec[i];
+        Identifier* given = call->args->argsVec[i];
+        Variable* varInCalled = proceduresTable[call->name]->callableTable[inCalled->val];
+        Variable* varGiven;
 
-//             }
-//             return false;
-//         }
-//         for(int i=0; i<called->head->args->argsVec.size(); i++){
+        if(current->symbolTable[given->val]){
+            varGiven = current->symbolTable[given->val];
+        }else if(current->callableTable[given->val]){
+            varGiven = current->callableTable[given->val];
+        }else{
+            std::cout<<"Nieznany argument przy wywołaniu funkcji "<<call->name<<" w "<<current->head->name<<std::endl;
+            return false;
+        }
 
-//         }
-//     }
-// }
+        if(varInCalled->isOffsettable){
+            //We get indeksed array, so not array, but element of an array, so error.
+            if(given->isArray()){
+                std::cout<<"Funkcja "<<call->name<<" oczekuje tablicy, a dostała element tablicy "<<given->val<<" w "<<current->head->name<<std::endl;
+                return false; 
+            }else if(!varGiven->isOffsettable){
+                std::cout<<"Funkcja "<<call->name<<" oczekuje tablicy, a dostała zmienna "<<given->val<<" w "<<current->head->name<<std::endl;
+                return false;
+            }
+        }else{
+            //We accept only arrays indexed or normal variables
+            if(!given->isArray()&&varGiven->isOffsettable){
+                std::cout<<"Funkcja czekuje zmiennej, a dostała tablice "<<given->val<<" w "<<current->head->name<<std::endl;
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+
+
+bool Program::validateCallMain(Procedure_call* call){
+        if(!proceduresTable[call->name]){
+        std::cout<<"Wywołanie nieznanej funkcji "<<call->name<<std::endl; 
+        return false;
+    }
+    if(proceduresTable[call->name]->head->args->argsVec.size()!=call->args->argsVec.size()){
+        std::cout<<"Nieprawidłowa ilość argumentow funkcji " <<call->name<<std::endl;
+        return false;
+    }
+    for(int i=0; i<proceduresTable[call->name]->head->args->argsVec.size(); i++){
+        Identifier* inCalled = proceduresTable[call->name]->head->args->argsVec[i];
+        Identifier* given = call->args->argsVec[i];
+        Variable* varInCalled = proceduresTable[call->name]->callableTable[inCalled->val];
+        Variable* varGiven;
+
+        if(main->symbolTable[given->val]){
+            varGiven = main->symbolTable[given->val];
+        }else{
+            std::cout<<"Nieznany argument przy wywołaniu funkcji "<<call->name<<std::endl;
+            return false;
+        }
+
+        if(varInCalled->isOffsettable){
+            //We get indeksed array, so not array, but element of an array, so error.
+            if(given->isArray()){
+                std::cout<<"Funkcja "<<call->name<<" oczekuje tablicy, a dostała element tablicy "<<given->val<<std::endl;
+                return false; 
+            }else if(!varGiven->isOffsettable){
+                std::cout<<"Funkcja "<<call->name<<" oczekuje tablicy, a dostała zmienna "<<given->val<<std::endl;
+                return false;
+            }
+        }else{
+            //We accept only arrays indexed or normal variables
+            if(!given->isArray()&&varGiven->isOffsettable){
+                std::cout<<"Funkcja czekuje zmiennej, a dostała tablice "<<given->val<<std::endl;
+                return false;
+            }
+        }
+    }
+    return true;
+}
 
 // CAN BE OPTIMIZED USING SETS BUT NOW I HAVE MORE IMPORTANT THINGS TO DO
 // MAYBE ALSO REFACTORED TO MORE SUBPROCEDURES TO BE EASIER TO MANTAIN
@@ -113,7 +183,6 @@ bool Program::semantic(){
                 std::vector<Value*> identifiers = top->getVars();
                 for(int j=0; j<identifiers.size();j++){
                     std::string name = identifiers[j]->val;
-
                     if(currentProcedure.symbolTable[name]){
                         if(currentProcedure.symbolTable[name]->isOffsettable!=identifiers[j]->isArray()){
                             success=false;
@@ -127,6 +196,21 @@ bool Program::semantic(){
                     }else{
                         std::cout<<"Niezadeklarowana zmiena "<<name<<" w "<< currentProcedure.head->name<<std::endl;
                     }
+                    if(dynamic_cast<IndentifierArrPid*>(identifiers[j])){
+
+                        //Check if array indexes are correct. 
+                        IndentifierArrPid* arr =  dynamic_cast<IndentifierArrPid*>(identifiers[j]);
+                        std::string address = arr->address;
+                        if(currentProcedure.symbolTable[address]){
+                            if(currentProcedure.symbolTable[address]->isOffsettable){
+                                success=false;
+                                std::cout<<"Nieprawidlowe odwolanie sie do tablicy "<<name<<", zmienna "<<address <<" jest sama tablicą w "<< currentProcedure.head->name<<std::endl;
+                            }
+                        }else{
+                            success=false;
+                            std::cout<<"Nieprawidlowe odwolanie sie do tablicy "<<name<<", zmienna "<<address <<" nie jest zadeklarowana w "<< currentProcedure.head->name<<std::endl;
+                        }
+                    }
                 }
 
                 //////////////////////////////////////////////////////////////////////////////
@@ -134,22 +218,8 @@ bool Program::semantic(){
                 //////////////////////////////////////////////////////////////////////////////
                 if(top->isCall()){
                     Procedure_call* call = dynamic_cast<Procedure_call*>(top);
-                    if(!proceduresTable[call->name]){
-                        std::cout<<"Nieznana procedura "<<call->name<<" w "<<currentProcedure.head->name<<std::endl;
+                    if(!validateCallProc(call, &currentProcedure)){
                         success=false;
-                    }else{
-                        Procedure* called = proceduresTable[call->name];
-                        if(call->args->argsVec.size()!= called->head->args->argsVec.size()){
-                            std::cout<<"Nieprawidłowa ilość argumentow przy wywolaniu "<<call->name<<" w "<<currentProcedure.head->name<<std::endl;
-                            success=false;
-                        }else{
-                            bool validCall = false;
-                            for(int j=0; j<call->args->argsVec.size(); j++){
-                                Identifier* given = call->args->argsVec[j];
-                                Identifier* taken = called->head->args->argsVec[j];
-                                ////////////////////////////////////////////////// TODO
-                            }
-                        }
                     }
                 }
                 top->visited=true;
@@ -217,7 +287,29 @@ bool Program::semantic(){
                         std::cout<<"Nieprawidlowe uzycie "<<name<<std::endl;
                     }
                 }
+                if(dynamic_cast<IndentifierArrPid*>(identifiers[j])){
+                    //Check if array indexes are correct. 
+                    IndentifierArrPid* arr =  dynamic_cast<IndentifierArrPid*>(identifiers[j]);
+                    std::string address = arr->address;
+                    if(main->symbolTable[address]){
+                        if(main->symbolTable[address]->isOffsettable){
+                            success=false;
+                            std::cout<<"Nieprawidlowe odwolanie sie do tablicy "<<name<<", zmienna "<<address <<" jest sama tablicą"<<std::endl;
+                        }
+                    }else{
+                        success=false;
+                        std::cout<<"Nieprawidlowe odwolanie sie do tablicy "<<name<<", zmienna "<<address <<" nie jest zadeklarowana"<<std::endl;
+                    }
+                }
             }
+            if(top->isCall()){
+                Procedure_call* call = dynamic_cast<Procedure_call*>(top);
+                if(!validateCallMain(call)){
+                    success=false;
+                }
+            }
+            //VALIDATE CALLS
+
             top->visited=true;
 
             for(int j=0; j<top->getNext().size();j++){
@@ -229,9 +321,5 @@ bool Program::semantic(){
             }
         }
     }
-
-    
-
-    
 
 }
