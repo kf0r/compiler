@@ -321,5 +321,27 @@ bool Program::semantic(){
             }
         }
     }
+}
 
+void Program::printer(){
+    std::stack<Instruction*> instStack;
+    instStack.push(main->comms->getHead());
+    while(!instStack.empty()){
+        Instruction* top = instStack.top();
+        instStack.pop();
+        if(top->visited){
+            std::vector<Value*> identifiers = top->getVars();
+            for(int j=0; j<identifiers.size();j++){
+                std::cout<<identifiers[j]->val<<std::endl;
+            }
+            top->visited=false;
+            for(int j=0; j<top->getNext().size();j++){
+                if(top->getNext()[j]!=nullptr){
+                    if(top->getNext()[j]->visited){
+                        instStack.push(top->getNext()[j]);
+                    }
+                }
+            }
+        }
+    }
 }

@@ -171,6 +171,7 @@ program_all: procedures main {
                     program->procedures = $1;
                     $$=program;
                     program->semantic();
+                    program->printer();
                 }
 ;
 procedures: procedures PROCEDURE proc_head IS declarations IN commands END {
@@ -233,7 +234,7 @@ command:    identifier ASSIGN expression SEMICOLON {
                     conditional->next = merger;
                     $4->getTail()->next = merger;
                     $6->getTail()->next = merger;
-                    $$ = merger;
+                    $$ = conditional;
                     //delete($4);
                     //delete($6);
                 }
@@ -244,7 +245,7 @@ command:    identifier ASSIGN expression SEMICOLON {
                     simp->nextIfTrue = $4->getHead();
                     simp->next = merger;
                     $4->getTail()->next = merger;
-                    $$ = merger;
+                    $$ = simp;
                     //delete($4);
                 }
             | WHILE condition DO commands ENDWHILE {
