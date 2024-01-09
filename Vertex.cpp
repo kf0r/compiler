@@ -2,6 +2,9 @@
 #include <iostream>
 #include <vector>
 
+///////////////////////////////////////////////
+//INSTRUCTION
+///////////////////////////////////////////////
 std::vector<Value*> Instruction::getVars(){
     std::vector<Value*> empty;
     return empty;
@@ -13,6 +16,17 @@ std::vector<Instruction*> Instruction::getNext(){
     return nexts;
 }
 
+Instruction::Instruction(){
+    Instruction::next=nullptr;
+}
+
+bool Instruction::isCall(){
+    return false;
+}
+
+///////////////////////////////////////////////
+//CONDITIONAL SIMPLE
+///////////////////////////////////////////////
 std::vector<Value*> ConditionalSimple::getVars(){
     std::vector<Value*> vars;
     //if value is a number, getVar returns empty string. Its strictly for semantic analisys
@@ -34,6 +48,9 @@ std::vector<Instruction*> ConditionalSimple::getNext(){
     return nexts;
 }
 
+///////////////////////////////////////////////
+//CONDITIONAL
+///////////////////////////////////////////////
 std::vector<Instruction*> Conditional::getNext(){
     std::vector<Instruction*> nexts;
     nexts.push_back(next);
@@ -42,7 +59,9 @@ std::vector<Instruction*> Conditional::getNext(){
     return nexts;
 }
 
-
+///////////////////////////////////////////////
+//ASSIGNMENT
+///////////////////////////////////////////////
 std::vector<Value*> Assignment::getVars(){
     std::vector<Value*> vars;
     vars.push_back(identifier);
@@ -60,6 +79,9 @@ std::vector<Value*> Assignment::getVars(){
     return vars;
 }
 
+///////////////////////////////////////////////
+//PROCEDURE CALLL
+///////////////////////////////////////////////
 std::vector<Value*> Procedure_call::getVars(){
     std::vector<Value*> vars;
     for(int i=0; i<args->argsVec.size(); i++){
@@ -69,6 +91,13 @@ std::vector<Value*> Procedure_call::getVars(){
     return vars;
 }
 
+bool Procedure_call::isCall(){
+    return true;
+}
+
+///////////////////////////////////////////////
+//WRITE
+///////////////////////////////////////////////
 std::vector<Value*> Write::getVars(){
     std::vector<Value*> vars;
     if(val->getIdentifier()!=nullptr){
@@ -77,13 +106,18 @@ std::vector<Value*> Write::getVars(){
     return vars;
 }
 
+///////////////////////////////////////////////
+//READ
+///////////////////////////////////////////////
 std::vector<Value*> Read::getVars(){
     std::vector<Value*> vars;
     vars.push_back(ident);
     return vars;
 }
 
-
+///////////////////////////////////////////////
+//LINKED COMMANDS
+///////////////////////////////////////////////
 LinkedCommands::LinkedCommands(){
     LinkedCommands::head=nullptr;
     LinkedCommands::tail=nullptr;
@@ -110,11 +144,9 @@ Instruction* LinkedCommands::getTail(){
     return this->LinkedCommands::tail;
 }
 
-
-Instruction::Instruction(){
-    Instruction::next=nullptr;
-}
-
+///////////////////////////////////////////////
+//PROCEDURES ALL
+///////////////////////////////////////////////
 bool ProceduresAll::addProc(Procedure* proc){
     ProceduresAll::procedures.push_back(proc);
     return true;

@@ -12,6 +12,8 @@ public:
     std::map<std::string, Procedure*> proceduresTable; 
     ProceduresAll* procedures;
     Main* main;
+
+    //bool validateCall(Procedure_call* call,Program_part* currentPart);
     bool semantic();
 };
 
