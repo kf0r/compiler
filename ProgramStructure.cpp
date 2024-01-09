@@ -2,23 +2,6 @@
 #include <stack>
 #include <iostream>
 
-// bool Program::validateCall(Procedure_call* call, Program_part* currentPart){
-//     if(!proceduresTable[call->name]){
-//         return false;
-//     }else{
-//         Procedure* called = proceduresTable[call->name];
-//         if(called->head->args->argsVec.size()!=call->args->argsVec.size()){
-//             std::cout<<"Nieprawidłowa ilość argumentow wywolania "<<call->name;
-//             if(Procedure* proc = dynamic_cast<Procedure*>(currentPart)){
-
-//             }
-//             return false;
-//         }
-//         for(int i=0; i<called->head->args->argsVec.size(); i++){
-
-//         }
-//     }
-// }
 
 // CAN BE OPTIMIZED USING SETS BUT NOW I HAVE MORE IMPORTANT THINGS TO DO
 // MAYBE ALSO REFACTORED TO MORE SUBPROCEDURES TO BE EASIER TO MANTAIN
@@ -100,7 +83,6 @@ bool Program::semantic(){
 
         //////////////////////////////////////////////////////////////////////////////
         // CHECKING IF ALL VARIABLES ARE DECLARED AND MANAGED CORRECTLY
-        // CHECKING PROCEDURES CALL
         //////////////////////////////////////////////////////////////////////////////
 
         std::stack<Instruction*> instStack;
@@ -111,6 +93,7 @@ bool Program::semantic(){
 
             if(!top->visited){
                 std::vector<Value*> identifiers = top->getVars();
+
                 for(int j=0; j<identifiers.size();j++){
                     std::string name = identifiers[j]->val;
 
@@ -127,30 +110,7 @@ bool Program::semantic(){
                     }else{
                         std::cout<<"Niezadeklarowana zmiena "<<name<<" w "<< currentProcedure.head->name<<std::endl;
                     }
-                }
-
-                //////////////////////////////////////////////////////////////////////////////
-                // CHECKING PROCEDURES CALL
-                //////////////////////////////////////////////////////////////////////////////
-                if(top->isCall()){
-                    Procedure_call* call = dynamic_cast<Procedure_call*>(top);
-                    if(!proceduresTable[call->name]){
-                        std::cout<<"Nieznana procedura "<<call->name<<" w "<<currentProcedure.head->name<<std::endl;
-                        success=false;
-                    }else{
-                        Procedure* called = proceduresTable[call->name];
-                        if(call->args->argsVec.size()!= called->head->args->argsVec.size()){
-                            std::cout<<"Nieprawidłowa ilość argumentow przy wywolaniu "<<call->name<<" w "<<currentProcedure.head->name<<std::endl;
-                            success=false;
-                        }else{
-                            bool validCall = false;
-                            for(int j=0; j<call->args->argsVec.size(); j++){
-                                Identifier* given = call->args->argsVec[j];
-                                Identifier* taken = called->head->args->argsVec[j];
-                                ////////////////////////////////////////////////// TODO
-                            }
-                        }
-                    }
+                    
                 }
                 top->visited=true;
                 //yep could be refactored to keep vector of instructions pointers but its cosmetics
@@ -211,6 +171,7 @@ bool Program::semantic(){
                     success=false;
                     std::cout<<"Uzycie nieznanej zmiennej "<<name<<std::endl;
                 }else{
+
                     //Checking if variables are used correctly
                     if(main->symbolTable[name]->isOffsettable!=identifiers[j]->isArray()){
                         success=false;
