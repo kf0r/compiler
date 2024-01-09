@@ -12,6 +12,7 @@ public:
     std::string val;
     //bool isArray = false; /////TODO: WYWALIC I ZAMIENIC NA FUNKCJE WIRTUALNA ZWRACAJACA NWM HGW CO
     virtual Identifier* getIdentifier();
+    virtual bool isArray();
 };
 
 class Number: public Value{
@@ -89,7 +90,7 @@ class Variable{
 public:
     std::string id;
     bool isInitialized=false;
-    bool isOffsettable=false;
+    bool isOffsettable;
     unsigned long long adress;
     unsigned long long offset = 0;
 };

@@ -40,7 +40,11 @@ bool Program::semantic(){
             Variable* var = new Variable;
             var->id=name;
             if(argsVector[j]->isArray()){
+                //std::cout<<"OFFSETTABLE"<<std::endl;
                 var->isOffsettable=true;
+            }else{
+                //std::cout<<"NOTOFFSETTABLE"<<std::endl;
+                var->isOffsettable=false;
             }
             //////// MANAGE MEMORY, SET OFFSETS itd 
             currentProcedure.callableTable.insert(std::pair<std::string, Variable*> (name, var));
@@ -69,7 +73,11 @@ bool Program::semantic(){
                 var->id=name;
                 var->offset = decsVector[j]->getOffset();
                 if(decsVector[j]->isArray()){
+                    //std::cout<<"OFFSETTABLE"<<std::endl;
                     var->isOffsettable=true;
+                }else{
+                    //std::cout<<"NOTOFSETTABLE"<<std::endl;
+                    var->isOffsettable=false;
                 }
 
                 //////// MANAGE MEMORY 
@@ -108,15 +116,21 @@ bool Program::semantic(){
                     // }
 
                     //Checking redeclarations
-                    if(!currentProcedure.symbolTable[name]&&!currentProcedure.callableTable[name]){
-                        success = false;
-                        std::cout<<"Uzycie nieznanej zmiennej "<<name<<" w "<<currentProcedure.head->name<<std::endl;
+                    if(currentProcedure.symbolTable[name]){
+                        wasDeclared = true;
+                        if(currentProcedure.symbolTable[name]->isOffsettable!=identifiers[j]->isArray()){
+                            success=false;
+                            std::cout<<"Nieprawidlowe uzycie "<<name<<" w "<< currentProcedure.head->name<<std::endl;
+                        }
+                    }else if(currentProcedure.callableTable[name]){
+                        wasDeclared = true;
+                        if(currentProcedure.callableTable[name]->isOffsettable!=identifiers[j]->isArray()){
+                            success=false;
+                            std::cout<<"Nieprawidlowe uzycie "<<name<<" w "<< currentProcedure.head->name<<std::endl;
+                        }
                     }else{
-                        //Checking if variables are used correctly
-
-
+                        std::cout<<"Niezadeklarowana zmiena "<<name<<" w "<< currentProcedure.head->name<<std::endl;
                     }
-
                     
                 }
                 top->visited=true;

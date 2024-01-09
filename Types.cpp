@@ -8,6 +8,10 @@ Identifier* Value::getIdentifier(){
     return nullptr;
 }
 
+bool Value::isArray(){
+    return false;
+}
+
 ///////////////////////////////////////////////
 //IDENTIFIER
 ///////////////////////////////////////////////
