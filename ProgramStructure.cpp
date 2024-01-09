@@ -40,10 +40,8 @@ bool Program::semantic(){
             Variable* var = new Variable;
             var->id=name;
             if(argsVector[j]->isArray()){
-                //std::cout<<"OFFSETTABLE"<<std::endl;
                 var->isOffsettable=true;
             }else{
-                //std::cout<<"NOTOFFSETTABLE"<<std::endl;
                 var->isOffsettable=false;
             }
             //////// MANAGE MEMORY, SET OFFSETS itd 
@@ -73,10 +71,8 @@ bool Program::semantic(){
                 var->id=name;
                 var->offset = decsVector[j]->getOffset();
                 if(decsVector[j]->isArray()){
-                    //std::cout<<"OFFSETTABLE"<<std::endl;
                     var->isOffsettable=true;
                 }else{
-                    //std::cout<<"NOTOFSETTABLE"<<std::endl;
                     var->isOffsettable=false;
                 }
 
@@ -97,33 +93,16 @@ bool Program::semantic(){
 
             if(!top->visited){
                 std::vector<Value*> identifiers = top->getVars();
-                //std::vector<Identifier*> identifiers = top->getIdentifiers(); //TODO
 
                 for(int j=0; j<identifiers.size();j++){
-                    bool wasDeclared = false;
                     std::string name = identifiers[j]->val;
 
-                    // for (auto pair : currentProcedure.callableTable){
-                    //     if(name == pair.first){
-                    //         wasDeclared=true;
-                    //     }
-                    // }
-
-                    // for (auto pair : currentProcedure.symbolTable){
-                    //     if(name == pair.first){
-                    //         wasDeclared=true;
-                    //     }
-                    // }
-
-                    //Checking redeclarations
                     if(currentProcedure.symbolTable[name]){
-                        wasDeclared = true;
                         if(currentProcedure.symbolTable[name]->isOffsettable!=identifiers[j]->isArray()){
                             success=false;
                             std::cout<<"Nieprawidlowe uzycie "<<name<<" w "<< currentProcedure.head->name<<std::endl;
                         }
                     }else if(currentProcedure.callableTable[name]){
-                        wasDeclared = true;
                         if(currentProcedure.callableTable[name]->isOffsettable!=identifiers[j]->isArray()){
                             success=false;
                             std::cout<<"Nieprawidlowe uzycie "<<name<<" w "<< currentProcedure.head->name<<std::endl;
@@ -163,6 +142,11 @@ bool Program::semantic(){
             Variable* var = new Variable;
             var->id=name;
             var->offset = decsVector[i]->getOffset();
+            if(decsVector[i]->isArray()){
+                var->isOffsettable=true;
+            }else{
+                var->isOffsettable=false;
+            }
             //////// MANAGE MEMORY
             main->symbolTable.insert(std::pair<std::string, Variable*> (name, var));
         }
@@ -183,19 +167,17 @@ bool Program::semantic(){
                 bool wasDeclared = false;
                 std::string name = identifiers[j]->val;
 
-                // for (auto pair : main->symbolTable){
-                //     if(name == pair.first){
-                //         wasDeclared=true;
-                //     }
-                // }
-
                 if(!main->symbolTable[name]){
                     success=false;
                     std::cout<<"Uzycie nieznanej zmiennej "<<name<<std::endl;
                 }else{
-                    //Checking if variables are used correctly
-                }
 
+                    //Checking if variables are used correctly
+                    if(main->symbolTable[name]->isOffsettable!=identifiers[j]->isArray()){
+                        success=false;
+                        std::cout<<"Nieprawidlowe uzycie "<<name<<std::endl;
+                    }
+                }
             }
             top->visited=true;
 
