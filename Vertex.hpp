@@ -14,8 +14,10 @@ public:
     unsigned int index;
     Instruction* next;
 
+    virtual bool isCall();
     virtual std::vector<Value*> getVars();
     virtual std::vector<Instruction*> getNext();
+
 };
 
 class ConditionalSimple: public Instruction{
@@ -23,6 +25,7 @@ public:
     bool isConditional = true;
     Instruction* nextIfTrue;
     Condition* cond;
+
     std::vector<Value*> getVars();
     virtual std::vector<Instruction*> getNext();
 };
@@ -30,6 +33,7 @@ public:
 class Conditional: public ConditionalSimple{
 public:
     Instruction* nextIfFalse;
+
     std::vector<Instruction*> getNext();
 };
 
@@ -55,6 +59,7 @@ public:
     std::string name;
 
     std::vector<Value*> getVars();
+    bool isCall();
 };
 
 class Write: public Instruction{
@@ -81,20 +86,24 @@ public:
     Instruction* getTail(); 
 };
 
-class Main{
+class Program_part{
 public:
     std::map<std::string, Variable*> symbolTable;
     Declaration* decs;
     LinkedCommands* comms;
 };
 
-class Procedure{
+class Main: public Program_part{
+
+};
+
+class Procedure: public Program_part{
 public:
-    std::map<std::string, Variable*> symbolTable;
+    //std::map<std::string, Variable*> symbolTable;
     std::map<std::string, Variable*> callableTable;
     Procedure_head* head;
-    LinkedCommands* comms;
-    Declaration* decs;
+    //LinkedCommands* comms;
+    //Declaration* decs;
 };
 
 class ProcedureComplex: public Procedure{
@@ -104,6 +113,7 @@ public:
 class ProceduresAll{
 public:
     std::vector<Procedure*> procedures;
+
     bool addProc(Procedure* proc);
 };
 
