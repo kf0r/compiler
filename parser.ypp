@@ -230,8 +230,9 @@ command:    identifier ASSIGN expression SEMICOLON {
                     conditional->cond = $2;
                     conditional->nextIfTrue = $4->getHead();
                     conditional->nextIfFalse = $6->getHead();
-                    Instruction *merger = new Instruction();
-                    conditional->next = merger;
+                    Merger *merger = new Merger();
+                    //Instruction *merger = new Instruction();
+                    //conditional->next = merger;
                     $4->getTail()->next = merger;
                     $6->getTail()->next = merger;
                     $$ = conditional;
@@ -241,7 +242,8 @@ command:    identifier ASSIGN expression SEMICOLON {
             | IF condition THEN commands ENDIF {
                     ConditionalSimple *simp = new ConditionalSimple();
                     simp->cond = $2;
-                    Instruction *merger = new Instruction();
+                    //Instruction *merger = new Instruction();
+                    Merger *merger = new Merger();
                     simp->nextIfTrue = $4->getHead();
                     simp->next = merger;
                     $4->getTail()->next = merger;
@@ -252,7 +254,7 @@ command:    identifier ASSIGN expression SEMICOLON {
                     ConditionalWhile *loop = new ConditionalWhile();
                     loop->cond = $2;
                     loop->nextIfTrue = $4->getHead();
-                    $4->getTail()->next = loop;
+                    //$4->getTail()->next = loop;
                     $$ = loop;
                     //Merger niepotrzebny, bo bierzemy wskaznik na NEXT. 
                     //delete($4);
@@ -260,9 +262,10 @@ command:    identifier ASSIGN expression SEMICOLON {
             | REPEAT commands UNTIL condition SEMICOLON {
                     ConditionalRepeat *loop = new ConditionalRepeat();
                     loop->cond=$4;
-                    $$ = $2->getHead();
-                    $2->getTail()->next = loop;
+                    //$$ = $2->getHead();
+                    //$2->getTail()->next = loop;
                     loop->nextIfTrue = $2->getHead();
+                    $$ = loop;
                     //delete($2);
                 }
             | proc_call SEMICOLON {

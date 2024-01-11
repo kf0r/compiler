@@ -20,6 +20,10 @@ public:
 
 };
 
+class Merger: public Instruction{
+
+};
+
 class ConditionalSimple: public Instruction{
 public:
     bool isConditional = true;
