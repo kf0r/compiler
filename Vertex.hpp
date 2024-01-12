@@ -41,17 +41,16 @@ public:
 class Conditional: public ConditionalSimple{
 public:
     Instruction* nextIfFalse;
-
     std::vector<Instruction*> getNext();
-    std::string print();
+    //std::string print();
 };
 
 class ConditionalWhile: public ConditionalSimple{
-    std::string print();
+    //std::string print();
 };
 
-class ConditionalRepeat: public ConditionalSimple{
-    std::string print();
+class ConditionalRepeat: public Conditional{
+    //std::string print();
 
 };
 
@@ -71,7 +70,7 @@ public:
 
     std::vector<Value*> getVars();
     bool isCall();
-    //void print();
+    std::string print();
 };
 
 class Write: public Instruction{
@@ -79,14 +78,14 @@ public:
     Value* val;
 
     std::vector<Value*> getVars();
-    //void print();
+    std::string print();
 };
 
 class Read: public Instruction{
 public:
     Identifier* ident;
     std::vector<Value*> getVars();
-    //void print();
+    std::string print();
 };
 
 class LinkedCommands{

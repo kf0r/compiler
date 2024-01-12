@@ -60,7 +60,7 @@ std::vector<Instruction*> ConditionalSimple::getNext(){
 }
 
 std::string ConditionalSimple::print(){
-   return "IF " + cond->leftVal->val + cond->operand + cond->rightVal->val+":\n";
+   return "CONDITION " + cond->leftVal->val + cond->operand + cond->rightVal->val+":\n";
 }
 
 ///////////////////////////////////////////////
@@ -70,27 +70,27 @@ std::vector<Instruction*> Conditional::getNext(){
     std::vector<Instruction*> nexts;
     nexts.push_back(next);
     nexts.push_back(nextIfTrue);
-    //nexts.push_back(nextIfFalse);
+    nexts.push_back(nextIfFalse);
     return nexts;
 }
 
-std::string Conditional::print(){
-    return "IF "+cond->leftVal->val+ cond->operand+cond->rightVal->val+" ELSE: \n";
-}
+// std::string Conditional::print(){
+//     return "IF "+cond->leftVal->val+ cond->operand+cond->rightVal->val+" ELSE: \n";
+// }
 
 ///////////////////////////////////////////////
 //CONDITIONAL WHILE
 ///////////////////////////////////////////////
-std::string ConditionalWhile::print(){
-    return "WHILE "+cond->leftVal->val+cond->operand+cond->rightVal->val+"DO \n";
-}
+// std::string ConditionalWhile::print(){
+//     return "WHILE "+cond->leftVal->val+cond->operand+cond->rightVal->val+"DO \n";
+// }
 
 ///////////////////////////////////////////////
 //CONDITIONAL REPEAT
 ///////////////////////////////////////////////
-std::string ConditionalRepeat::print(){
-    return "REPEAT UNITL "+cond->leftVal->val+cond->operand+cond->rightVal->val+"DO \n";
-}
+// std::string ConditionalRepeat::print(){
+//     return "REPEAT UNITL "+cond->leftVal->val+cond->operand+cond->rightVal->val+"DO \n";
+// }
 
 ///////////////////////////////////////////////
 //ASSIGNMENT
@@ -124,16 +124,21 @@ std::string Assignment::print(){
 //PROCEDURE CALLL
 ///////////////////////////////////////////////
 std::vector<Value*> Procedure_call::getVars(){
-    std::vector<Value*> vars;
-    for(int i=0; i<args->argsVec.size(); i++){
-        //provided grammar says that arguments for function are variables
-        vars.push_back(args->argsVec[i]);
-    }
-    return vars;
+    //procedure calls are validated differently, so this returns empty vector
+    std::vector<Value*> empty;
+    return empty;
 }
 
 bool Procedure_call::isCall(){
     return true;
+}
+
+std::string Procedure_call::print(){
+    std::string toRet = "CALL "+name+" ";
+    for(int i=0; i<args->argsVec.size();i++){
+        toRet+=args->argsVec[i]->val+" ";
+    }
+    return toRet+"\n";
 }
 
 ///////////////////////////////////////////////
@@ -147,6 +152,10 @@ std::vector<Value*> Write::getVars(){
     return vars;
 }
 
+std::string Write::print(){
+    return "WRITE "+val->val+"\n";
+}
+
 ///////////////////////////////////////////////
 //READ
 ///////////////////////////////////////////////
@@ -154,6 +163,10 @@ std::vector<Value*> Read::getVars(){
     std::vector<Value*> vars;
     vars.push_back(ident);
     return vars;
+}
+
+std::string Read::print(){
+    return "READ "+ident->val+"\n";
 }
 
 ///////////////////////////////////////////////

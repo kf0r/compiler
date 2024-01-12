@@ -15,6 +15,7 @@ public:
     bool visited = false;
     Block* ifTrue;
     Block* ifFalse;
+    int index;
 
     std::string toString();
 };

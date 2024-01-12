@@ -5,11 +5,18 @@
 #include <stack>
 
 std::string Block::toString(){
-    std::string repr="";
+    std::string repr="B"+std::to_string(index)+"\n";
     for(int i=0; i<inst.size(); i++){
         repr+=inst[i]->print();
     }
-    return repr;
+    if(ifTrue!=nullptr){
+    repr+"JUMP B"+std::to_string(ifTrue->index)+"\n";
+    }
+                                          
+    if(ifFalse!=nullptr){
+        repr+"ELSE JUMP B"+std::to_string(ifFalse->index)+"\n";
+    }
+    return repr+"";
 }
 
 
@@ -26,6 +33,7 @@ Block* BlockRepresentation::DFS(Instruction* current){
         blockIndexes++;
                       
         Block* block = new Block();
+        block->index = blockIndexes;
         //block->inst.push_back(current);
         current->blockIndex = blockIndexes;
         while(current->getNext().size() == 1){
@@ -39,8 +47,8 @@ Block* BlockRepresentation::DFS(Instruction* current){
                         return block;
                     }
                 }
-                if(current!=nullptr){
-                    block->ifTrue = DFS(current);
+                if(current->next!=nullptr){
+                    block->ifTrue = DFS(current->next);
                 }
                 return block;
             }else{
@@ -73,6 +81,12 @@ void BlockRepresentation::print(){
         stack.pop();
         if(!top->visited){
             std::cout<<top->toString();
+            if(top->ifTrue!=nullptr){
+                std::cout<<"TRUE JUMP B"<<top->ifTrue->index<<std::endl;
+            }if(top->ifFalse!=nullptr){
+                std::cout<<"FALSE JUMP B"<<top->ifFalse->index<<std::endl;
+            }
+
             top->visited=true;
         }
         if(top->ifFalse!=nullptr&&!top->ifFalse->visited){

@@ -2,6 +2,11 @@
 #include <stack>
 #include <iostream>
 
+////////////////////////////////////////////////////
+////////////////////////TODO////////////////////////
+///////////check redeclarations in calls////////////
+//////////////check indexing in calls///////////////
+////////////////////////////////////////////////////
 bool Program::validateCallProc(Procedure_call* call, Procedure* current){
     if(!proceduresTable[call->name]){
         std::cout<<"Wywołanie nieznanej funkcji "<<call->name<<" w "<<current->head->name<<std::endl; 
@@ -203,6 +208,11 @@ bool Program::semantic(){
                         std::string address = arr->address;
                         if(currentProcedure.symbolTable[address]){
                             if(currentProcedure.symbolTable[address]->isOffsettable){
+                                success=false;
+                                std::cout<<"Nieprawidlowe odwolanie sie do tablicy "<<name<<", zmienna "<<address <<" jest sama tablicą w "<< currentProcedure.head->name<<std::endl;
+                            }
+                        }else if(currentProcedure.callableTable[address]){
+                            if(currentProcedure.callableTable[address]->isOffsettable){
                                 success=false;
                                 std::cout<<"Nieprawidlowe odwolanie sie do tablicy "<<name<<", zmienna "<<address <<" jest sama tablicą w "<< currentProcedure.head->name<<std::endl;
                             }

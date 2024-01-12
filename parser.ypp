@@ -173,7 +173,7 @@ program_all: procedures main {
                     program->semantic();
                     //program->printer();
                     program->generateBB();
-                    std::cout<<program->BBs->blockIndexes;
+                    //std::cout<<program->BBs->blockIndexes;
                     program->BBs->print();
                 }
 ;
@@ -230,56 +230,48 @@ command:    identifier ASSIGN expression SEMICOLON {
                 }
             | IF condition THEN commands ELSE commands ENDIF {
                     Conditional *conditional = new Conditional();
+                    Merger *merger = new Merger();
                     conditional->cond = $2;
                     conditional->nextIfTrue = $4->getHead();
                     conditional->nextIfFalse = $6->getHead();
-                    Merger *merger = new Merger();
-                    //Instruction *merger = new Instruction();
-                    conditional->next = merger;
+                    
                     $4->getTail()->next = merger;
                     $6->getTail()->next = merger;
+                    conditional->next = merger;
                     $$ = conditional;
-                    //delete($4);
-                    //delete($6);
                 }
             | IF condition THEN commands ENDIF {
                     ConditionalSimple *simp = new ConditionalSimple();
                     simp->cond = $2;
-                    //Instruction *merger = new Instruction();
                     Merger *merger = new Merger();
                     simp->nextIfTrue = $4->getHead();
                     simp->next = merger;
                     $4->getTail()->next = merger;
                     $$ = simp;
-                    //delete($4);
                 }
             | WHILE condition DO commands ENDWHILE {
                     ConditionalWhile *loop = new ConditionalWhile();
                     loop->cond = $2;
-                    // loop->nextIfTrue = $4->getHead();
-                    // Merger *merger = new Merger();
-                    // $4->getTail()->next = merger;
-                    // loop->next = merger
-                    // $$ = loop;
-
-                    Merger *merger = new Merger();
-                    merger->next = $4->getHead();
-                    $4->getTail()->next = loop;
+                    Merger *mergerEntry = new Merger();
+                    Merger *mergerExit = new Merger();
+                    mergerEntry->next = loop;
                     loop->nextIfTrue = $4->getHead();
-                    $$ = merger;
-                    //Merger niepotrzebny, bo bierzemy wskaznik na NEXT. 
-                    //delete($4);
+                    $4->getTail()->next = mergerEntry;
+                    loop->next = mergerExit;
+                    $$ = mergerEntry;
                 }
             | REPEAT commands UNTIL condition SEMICOLON {
                     ConditionalRepeat *loop = new ConditionalRepeat();
-                    Merger *merger = new Merger();
-                    loop->cond=$4;
-                    loop->next = merger;
-                    //$$ = $2->getHead();
-                    $2->getTail()->next = merger;
-                    loop->nextIfTrue = $2->getHead();
-                    $$ = loop;
-                    //delete($2);
+                    Merger *mergerEntry = new Merger();
+                    Merger *mergerExit = new Merger();
+                    mergerEntry->next = $2->getHead();
+                    $2->getTail()->next = loop;
+                    // to keep walking on linked list simple. It will be ignored in next steps
+                    loop->next = mergerExit;
+                    //loop is until, so goes on if condition isnt met
+                    loop->nextIfTrue = mergerExit;
+                    loop->nextIfFalse = mergerEntry;
+                    $$ = mergerEntry;
                 }
             | proc_call SEMICOLON {
                     $$ = $1;
