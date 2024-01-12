@@ -171,10 +171,8 @@ program_all: procedures main {
                     program->procedures = $1;
                     $$=program;
                     program->semantic();
-                    //program->printer();
                     program->generateBB();
-                    //std::cout<<program->BBs->blockIndexes;
-                    program->BBs->print();
+                    program->printBBs();
                 }
 ;
 procedures: procedures PROCEDURE proc_head IS declarations IN commands END {
@@ -264,6 +262,7 @@ command:    identifier ASSIGN expression SEMICOLON {
                     ConditionalRepeat *loop = new ConditionalRepeat();
                     Merger *mergerEntry = new Merger();
                     Merger *mergerExit = new Merger();
+                    loop->cond = $4;
                     mergerEntry->next = $2->getHead();
                     $2->getTail()->next = loop;
                     // to keep walking on linked list simple. It will be ignored in next steps

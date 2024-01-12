@@ -333,27 +333,19 @@ bool Program::semantic(){
     }
 }
 
-// void Program::printer(){
-//     std::stack<Instruction*> instStack;
-//     instStack.push(main->comms->getHead());
-//     while(!instStack.empty()){
-//         Instruction* top = instStack.top();
-//         instStack.pop();
-//         if(top->visited){
-//             top->print();
-//             top->visited=false;
-//             for(int j=0; j<top->getNext().size();j++){
-//                 if(top->getNext()[j]!=nullptr){
-//                     if(top->getNext()[j]->visited){
-//                         instStack.push(top->getNext()[j]);
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// }
-
 void Program::generateBB(){
     BBs = new BlockRepresentation();
     BBs->setBB(main->comms->head);
+    for(int i=0; i<procedures->procedures.size();i++){
+        BBs->addProcedureBB(procedures->procedures[i]->comms->getHead(), procedures->procedures[i]->head->name);
+    }
+}
+
+void Program::printBBs(){
+    std::cout<<"MAIN:\n";
+    BBs->print(BBs->initialBlock);
+    for(int i=0; i<procedures->procedures.size();i++){
+        std::cout<<"\nPROCEDURE "<<procedures->procedures[i]->head->name<<std::endl;
+        BBs->print(BBs->procedureBBs[procedures->procedures[i]->head->name]);
+    }
 }

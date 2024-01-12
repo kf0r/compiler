@@ -18,8 +18,8 @@ public:
     bool validateCallMain(Procedure_call* call);
     bool validateCallProc(Procedure_call* call, Procedure* current);
     bool semantic();
-    //void printer();
     void generateBB();
+    void printBBs();
 };
 
 #endif

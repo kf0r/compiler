@@ -24,58 +24,57 @@ void BlockRepresentation::setBB(Instruction* initial){
     initialBlock = DFS(initial);
 }
 
+void BlockRepresentation::addProcedureBB(Instruction* first, std::string name){
+    procedureBBs.insert(std::pair<std::string, Block*>(name, DFS(first)));
+}
+
 Block* BlockRepresentation::DFS(Instruction* current){
-    //Block* block = new Block();
-   // proceduresTable.insert(std::pair<std::string, Procedure*> (currentProcedure.head->name, &currentProcedure));
+    if(current==nullptr){
+        return nullptr;
+    }
+
+    while(dynamic_cast<Merger*> (current)){
+        current = current->next;
+        if(current==nullptr){
+            return nullptr;
+        }
+    }
     if(current->blockIndex!=-1){
         return blockMap[current->blockIndex];
-    }else{
-        blockIndexes++;
-                      
-        Block* block = new Block();
-        block->index = blockIndexes;
-        //block->inst.push_back(current);
-        current->blockIndex = blockIndexes;
-        while(current->getNext().size() == 1){
-            block->inst.push_back(current);
-            if(current->next==nullptr){
-                return block;
-            }else if(dynamic_cast<Merger*>(current->next)){
-                while(dynamic_cast<Merger*>(current->next)){
-                    current = current->next;
-                    if(current==nullptr){
-                        return block;
-                    }
-                }
-                if(current->next!=nullptr){
-                    block->ifTrue = DFS(current->next);
-                }
-                return block;
-            }else{
-                current = current->next;
-            }
-        }
-        if(current->getNext().size() ==0){
-            return block;
-        }else{
-            ConditionalSimple* conditionalSimple = dynamic_cast<ConditionalSimple*>(current);
-            block->inst.push_back(current);
-            if(dynamic_cast<Conditional*>(conditionalSimple)){
-                Conditional* conditional = dynamic_cast<Conditional*>(conditionalSimple);
-                block->ifFalse = DFS(conditional->nextIfFalse);
-                block->ifTrue = DFS(conditional->nextIfTrue);
-            }else{
-                block->ifFalse = DFS(conditionalSimple->next);
-                block->ifTrue = DFS(conditionalSimple->nextIfTrue);
-            }
+    }
+    Block* block = new Block();
+    
+    blockIndexes++;
+    current->blockIndex = blockIndexes;
+    block->index = blockIndexes;;
+    blockMap.insert(std::pair<int, Block*>(blockIndexes, block));
+    while(!dynamic_cast<Merger*> (current)&&!dynamic_cast<ConditionalSimple*>(current)){
+        block->inst.push_back(current);
+        current = current->next;
+        if(current==nullptr){
             return block;
         }
     }
+    if(dynamic_cast<Merger*> (current)){
+        block->ifTrue = DFS(current);
+    }else if(dynamic_cast<ConditionalSimple*> (current)){
+        ConditionalSimple* simp = dynamic_cast<ConditionalSimple*> (current);
+        block->inst.push_back(simp);
+        if(dynamic_cast<Conditional*> (simp)){
+            Conditional* cond = dynamic_cast<Conditional*> (simp);
+            block->ifTrue = DFS(cond->nextIfTrue);
+            block->ifFalse = DFS(cond->nextIfFalse);
+        }else{
+            block->ifTrue = DFS(simp->nextIfTrue);
+            block->ifFalse = DFS(simp->next);
+        }
+    }
+    return block;
 }
 
-void BlockRepresentation::print(){
+void BlockRepresentation::print(Block* starting){
     std::stack<Block*> stack;
-    stack.push(initialBlock);
+    stack.push(starting);
     while(!stack.empty()){
         Block* top = stack.top();
         stack.pop();

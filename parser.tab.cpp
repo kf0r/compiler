@@ -556,11 +556,11 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   168,   168,   180,   188,   196,   201,   207,   215,   219,
-     225,   231,   243,   252,   263,   276,   279,   284,   290,   297,
-     304,   310,   317,   324,   333,   339,   345,   352,   360,   366,
-     374,   379,   386,   393,   400,   407,   415,   422,   429,   436,
-     443,   450,   458,   463,   465,   470,   476
+       0,   168,   168,   178,   186,   194,   199,   205,   213,   217,
+     223,   229,   241,   250,   261,   275,   278,   283,   289,   296,
+     303,   309,   316,   323,   332,   338,   344,   351,   359,   365,
+     373,   378,   385,   392,   399,   406,   414,   421,   428,   435,
+     442,   449,   457,   462,   464,   469,   475
 };
 #endif
 
@@ -1214,16 +1214,14 @@ yyreduce:
                     program->procedures = (yyvsp[-1].procAllPointer);
                     (yyval.programPointer)=program;
                     program->semantic();
-                    //program->printer();
                     program->generateBB();
-                    //std::cout<<program->BBs->blockIndexes;
-                    program->BBs->print();
+                    program->printBBs();
                 }
-#line 1223 "parser.tab.cpp"
+#line 1221 "parser.tab.cpp"
     break;
 
   case 3: /* procedures: procedures PROCEDURE proc_head IS declarations IN commands END  */
-#line 180 "parser.ypp"
+#line 178 "parser.ypp"
                                                                            {
                     ProcedureComplex* proc = new ProcedureComplex();
                     proc->head = (yyvsp[-5].procHeadPointer);
@@ -1232,11 +1230,11 @@ yyreduce:
                     (yyvsp[-7].procAllPointer)->addProc(proc);
                     (yyval.procAllPointer)=(yyvsp[-7].procAllPointer);
                 }
-#line 1236 "parser.tab.cpp"
+#line 1234 "parser.tab.cpp"
     break;
 
   case 4: /* procedures: procedures PROCEDURE proc_head IS IN commands END  */
-#line 188 "parser.ypp"
+#line 186 "parser.ypp"
                                                                 {
                     Procedure* proc = new Procedure();
                     proc->head = (yyvsp[-4].procHeadPointer);
@@ -1245,31 +1243,31 @@ yyreduce:
                     (yyvsp[-6].procAllPointer)->addProc(proc);
                     (yyval.procAllPointer)=(yyvsp[-6].procAllPointer);
                 }
-#line 1249 "parser.tab.cpp"
+#line 1247 "parser.tab.cpp"
     break;
 
   case 5: /* procedures: %empty  */
-#line 196 "parser.ypp"
+#line 194 "parser.ypp"
                      {
                     ProceduresAll* proc = new ProceduresAll;
                     (yyval.procAllPointer)=proc;
                 }
-#line 1258 "parser.tab.cpp"
+#line 1256 "parser.tab.cpp"
     break;
 
   case 6: /* main: PROGRAM IS declarations IN commands END  */
-#line 201 "parser.ypp"
+#line 199 "parser.ypp"
                                                     {
                     Main* main = new Main();
                     main->decs = (yyvsp[-3].declarationPointer);
                     main->comms = (yyvsp[-1].linkedPointer);
                     (yyval.mainPoint)=main;
                 }
-#line 1269 "parser.tab.cpp"
+#line 1267 "parser.tab.cpp"
     break;
 
   case 7: /* main: PROGRAM IS IN commands END  */
-#line 207 "parser.ypp"
+#line 205 "parser.ypp"
                                          {
                     Main* main = new Main();
                     //Declaration* dec = new Declaration();
@@ -1277,41 +1275,41 @@ yyreduce:
                     main->comms = (yyvsp[-1].linkedPointer);
                     (yyval.mainPoint)=main;
                 }
-#line 1281 "parser.tab.cpp"
+#line 1279 "parser.tab.cpp"
     break;
 
   case 8: /* commands: commands command  */
-#line 215 "parser.ypp"
+#line 213 "parser.ypp"
                              {
                     (yyvsp[-1].linkedPointer)->addInst((yyvsp[0].instPointer));
                     (yyval.linkedPointer) = (yyvsp[-1].linkedPointer);
                 }
-#line 1290 "parser.tab.cpp"
+#line 1288 "parser.tab.cpp"
     break;
 
   case 9: /* commands: command  */
-#line 219 "parser.ypp"
+#line 217 "parser.ypp"
                       {
                     LinkedCommands *linkedCommand = new LinkedCommands();
                     linkedCommand->addInst((yyvsp[0].instPointer));
                     (yyval.linkedPointer) = linkedCommand;
                 }
-#line 1300 "parser.tab.cpp"
+#line 1298 "parser.tab.cpp"
     break;
 
   case 10: /* command: identifier ASSIGN expression SEMICOLON  */
-#line 225 "parser.ypp"
+#line 223 "parser.ypp"
                                                    {
                     Assignment* assign = new Assignment();
                     assign->expression = (yyvsp[-1].exprPoint);
                     assign->identifier = (yyvsp[-3].identPointer);
                     (yyval.instPointer) = assign;
                 }
-#line 1311 "parser.tab.cpp"
+#line 1309 "parser.tab.cpp"
     break;
 
   case 11: /* command: IF condition THEN commands ELSE commands ENDIF  */
-#line 231 "parser.ypp"
+#line 229 "parser.ypp"
                                                              {
                     Conditional *conditional = new Conditional();
                     Merger *merger = new Merger();
@@ -1324,11 +1322,11 @@ yyreduce:
                     conditional->next = merger;
                     (yyval.instPointer) = conditional;
                 }
-#line 1328 "parser.tab.cpp"
+#line 1326 "parser.tab.cpp"
     break;
 
   case 12: /* command: IF condition THEN commands ENDIF  */
-#line 243 "parser.ypp"
+#line 241 "parser.ypp"
                                                {
                     ConditionalSimple *simp = new ConditionalSimple();
                     simp->cond = (yyvsp[-3].condPoint);
@@ -1338,11 +1336,11 @@ yyreduce:
                     (yyvsp[-1].linkedPointer)->getTail()->next = merger;
                     (yyval.instPointer) = simp;
                 }
-#line 1342 "parser.tab.cpp"
+#line 1340 "parser.tab.cpp"
     break;
 
   case 13: /* command: WHILE condition DO commands ENDWHILE  */
-#line 252 "parser.ypp"
+#line 250 "parser.ypp"
                                                    {
                     ConditionalWhile *loop = new ConditionalWhile();
                     loop->cond = (yyvsp[-3].condPoint);
@@ -1354,15 +1352,16 @@ yyreduce:
                     loop->next = mergerExit;
                     (yyval.instPointer) = mergerEntry;
                 }
-#line 1358 "parser.tab.cpp"
+#line 1356 "parser.tab.cpp"
     break;
 
   case 14: /* command: REPEAT commands UNTIL condition SEMICOLON  */
-#line 263 "parser.ypp"
+#line 261 "parser.ypp"
                                                         {
                     ConditionalRepeat *loop = new ConditionalRepeat();
                     Merger *mergerEntry = new Merger();
                     Merger *mergerExit = new Merger();
+                    loop->cond = (yyvsp[-1].condPoint);
                     mergerEntry->next = (yyvsp[-3].linkedPointer)->getHead();
                     (yyvsp[-3].linkedPointer)->getTail()->next = loop;
                     // to keep walking on linked list simple. It will be ignored in next steps
@@ -1372,72 +1371,72 @@ yyreduce:
                     loop->nextIfFalse = mergerEntry;
                     (yyval.instPointer) = mergerEntry;
                 }
-#line 1376 "parser.tab.cpp"
+#line 1375 "parser.tab.cpp"
     break;
 
   case 15: /* command: proc_call SEMICOLON  */
-#line 276 "parser.ypp"
+#line 275 "parser.ypp"
                                   {
                     (yyval.instPointer) = (yyvsp[-1].callPointer);
                 }
-#line 1384 "parser.tab.cpp"
+#line 1383 "parser.tab.cpp"
     break;
 
   case 16: /* command: READ identifier SEMICOLON  */
-#line 279 "parser.ypp"
+#line 278 "parser.ypp"
                                         {
                     Read* reader = new Read();
                     reader->ident = (yyvsp[-1].identPointer);
                     (yyval.instPointer)=reader;
                 }
-#line 1394 "parser.tab.cpp"
+#line 1393 "parser.tab.cpp"
     break;
 
   case 17: /* command: WRITE value SEMICOLON  */
-#line 284 "parser.ypp"
+#line 283 "parser.ypp"
                                     {
                     Write* writer = new Write();
                     writer->val = (yyvsp[-1].valuePointer);
                     (yyval.instPointer) = writer;
                 }
-#line 1404 "parser.tab.cpp"
+#line 1403 "parser.tab.cpp"
     break;
 
   case 18: /* proc_head: PIDENTIFIER LBR args_decl RBR  */
-#line 290 "parser.ypp"
+#line 289 "parser.ypp"
                                           {
                     Procedure_head* head = new Procedure_head();
                     head->args = (yyvsp[-1].argPointer);
                     head->name = *(yyvsp[-3].ptoken).str;
                     (yyval.procHeadPointer)=head;
                 }
-#line 1415 "parser.tab.cpp"
+#line 1414 "parser.tab.cpp"
     break;
 
   case 19: /* proc_call: PIDENTIFIER LBR args RBR  */
-#line 297 "parser.ypp"
+#line 296 "parser.ypp"
                                      {
                     Procedure_call* call = new Procedure_call();
                     call->args = (yyvsp[-1].argPointer);
                     call->name = *(yyvsp[-3].ptoken).str;
                     (yyval.callPointer)=call;
                 }
-#line 1426 "parser.tab.cpp"
+#line 1425 "parser.tab.cpp"
     break;
 
   case 20: /* declarations: declarations COMMA PIDENTIFIER  */
-#line 304 "parser.ypp"
+#line 303 "parser.ypp"
                                              {
                     Identifier* ident = new Identifier();
                     ident->val = *(yyvsp[0].ptoken).str;
                     (yyvsp[-2].declarationPointer)->declare(ident);
                     (yyval.declarationPointer)=(yyvsp[-2].declarationPointer);
                 }
-#line 1437 "parser.tab.cpp"
+#line 1436 "parser.tab.cpp"
     break;
 
   case 21: /* declarations: declarations COMMA PIDENTIFIER LSQ NUM RSQ  */
-#line 310 "parser.ypp"
+#line 309 "parser.ypp"
                                                            {
                     IndentifierArrNumber* ident = new IndentifierArrNumber();
                     ident->address = std::to_string((yyvsp[-1].ptoken).val);
@@ -1445,11 +1444,11 @@ yyreduce:
                     (yyvsp[-5].declarationPointer)->declare(ident);
                     (yyval.declarationPointer)=(yyvsp[-5].declarationPointer);
                 }
-#line 1449 "parser.tab.cpp"
+#line 1448 "parser.tab.cpp"
     break;
 
   case 22: /* declarations: PIDENTIFIER  */
-#line 317 "parser.ypp"
+#line 316 "parser.ypp"
                             {
                     Identifier* ident = new Identifier();
                     ident->val = *(yyvsp[0].ptoken).str;
@@ -1457,11 +1456,11 @@ yyreduce:
                     dec->declare(ident);
                     (yyval.declarationPointer)=dec;
                 }
-#line 1461 "parser.tab.cpp"
+#line 1460 "parser.tab.cpp"
     break;
 
   case 23: /* declarations: PIDENTIFIER LSQ NUM RSQ  */
-#line 324 "parser.ypp"
+#line 323 "parser.ypp"
                                         {
                     IndentifierArrNumber* ident = new IndentifierArrNumber();
                     ident->address = std::to_string((yyvsp[-1].ptoken).val);
@@ -1470,33 +1469,33 @@ yyreduce:
                     dec->declare(ident);
                     (yyval.declarationPointer)=dec;
                 }
-#line 1474 "parser.tab.cpp"
+#line 1473 "parser.tab.cpp"
     break;
 
   case 24: /* args_decl: args_decl COMMA PIDENTIFIER  */
-#line 333 "parser.ypp"
+#line 332 "parser.ypp"
                                         {
                     Identifier* ident = new Identifier();
                     ident->val = *(yyvsp[0].ptoken).str;
                     (yyvsp[-2].argPointer)->addArg(ident);
                     (yyval.argPointer) = (yyvsp[-2].argPointer);
                 }
-#line 1485 "parser.tab.cpp"
+#line 1484 "parser.tab.cpp"
     break;
 
   case 25: /* args_decl: args_decl COMMA T PIDENTIFIER  */
-#line 339 "parser.ypp"
+#line 338 "parser.ypp"
                                             {
                     IndentifierArrNumber* ident = new IndentifierArrNumber();
                     ident->val = *(yyvsp[0].ptoken).str;
                     (yyvsp[-3].argPointer)->addArg(ident);
                     (yyval.argPointer) = (yyvsp[-3].argPointer);
                 }
-#line 1496 "parser.tab.cpp"
+#line 1495 "parser.tab.cpp"
     break;
 
   case 26: /* args_decl: PIDENTIFIER  */
-#line 345 "parser.ypp"
+#line 344 "parser.ypp"
                           {
                     Identifier* ident = new Identifier();
                     ident->val = *(yyvsp[0].ptoken).str;
@@ -1504,11 +1503,11 @@ yyreduce:
                     args->addArg(ident);
                     (yyval.argPointer) = args;
                 }
-#line 1508 "parser.tab.cpp"
+#line 1507 "parser.tab.cpp"
     break;
 
   case 27: /* args_decl: T PIDENTIFIER  */
-#line 352 "parser.ypp"
+#line 351 "parser.ypp"
                             {
                     IndentifierArrNumber* ident = new IndentifierArrNumber();
                     ident->val = *(yyvsp[0].ptoken).str;
@@ -1516,22 +1515,22 @@ yyreduce:
                     args->addArg(ident);
                     (yyval.argPointer) = args;
                 }
-#line 1520 "parser.tab.cpp"
+#line 1519 "parser.tab.cpp"
     break;
 
   case 28: /* args: args COMMA PIDENTIFIER  */
-#line 360 "parser.ypp"
+#line 359 "parser.ypp"
                                    {
                     Identifier* ident = new Identifier();
                     ident->val = *(yyvsp[0].ptoken).str;
                     (yyvsp[-2].argPointer)->addArg(ident);
                     (yyval.argPointer)=(yyvsp[-2].argPointer);
                 }
-#line 1531 "parser.tab.cpp"
+#line 1530 "parser.tab.cpp"
     break;
 
   case 29: /* args: PIDENTIFIER  */
-#line 366 "parser.ypp"
+#line 365 "parser.ypp"
                           {
                     Identifier* ident = new Identifier();
                     ident->val = *(yyvsp[0].ptoken).str;
@@ -1539,21 +1538,21 @@ yyreduce:
                     args->addArg(ident);
                     (yyval.argPointer)=args;
                 }
-#line 1543 "parser.tab.cpp"
+#line 1542 "parser.tab.cpp"
     break;
 
   case 30: /* expression: value  */
-#line 374 "parser.ypp"
+#line 373 "parser.ypp"
                   {
                 ExprSimple* simp = new ExprSimple();
                 simp->left = (yyvsp[0].valuePointer);
                 (yyval.exprPoint) = simp;
             }
-#line 1553 "parser.tab.cpp"
+#line 1552 "parser.tab.cpp"
     break;
 
   case 31: /* expression: value PLUS value  */
-#line 379 "parser.ypp"
+#line 378 "parser.ypp"
                                {
                 ExprComplex* comp = new ExprComplex();
                 comp->left = (yyvsp[-2].valuePointer);
@@ -1561,11 +1560,11 @@ yyreduce:
                 comp->operand = "+";
                 (yyval.exprPoint) = comp;
             }
-#line 1565 "parser.tab.cpp"
+#line 1564 "parser.tab.cpp"
     break;
 
   case 32: /* expression: value MINUS value  */
-#line 386 "parser.ypp"
+#line 385 "parser.ypp"
                                 {
                 ExprComplex* comp = new ExprComplex();
                 comp->left = (yyvsp[-2].valuePointer);
@@ -1573,11 +1572,11 @@ yyreduce:
                 comp->operand = "-";
                 (yyval.exprPoint) = comp;
             }
-#line 1577 "parser.tab.cpp"
+#line 1576 "parser.tab.cpp"
     break;
 
   case 33: /* expression: value MULT value  */
-#line 393 "parser.ypp"
+#line 392 "parser.ypp"
                                {
                 ExprComplex* comp = new ExprComplex();
                 comp->left = (yyvsp[-2].valuePointer);
@@ -1585,11 +1584,11 @@ yyreduce:
                 comp->operand = "*";
                 (yyval.exprPoint) = comp;
             }
-#line 1589 "parser.tab.cpp"
+#line 1588 "parser.tab.cpp"
     break;
 
   case 34: /* expression: value DIV value  */
-#line 400 "parser.ypp"
+#line 399 "parser.ypp"
                               {
                 ExprComplex* comp = new ExprComplex();
                 comp->left = (yyvsp[-2].valuePointer);
@@ -1597,11 +1596,11 @@ yyreduce:
                 comp->operand = "/";
                 (yyval.exprPoint) = comp;
             }
-#line 1601 "parser.tab.cpp"
+#line 1600 "parser.tab.cpp"
     break;
 
   case 35: /* expression: value MOD value  */
-#line 407 "parser.ypp"
+#line 406 "parser.ypp"
                               {
                 ExprComplex* comp = new ExprComplex();
                 comp->left = (yyvsp[-2].valuePointer);
@@ -1609,11 +1608,11 @@ yyreduce:
                 comp->operand = "%";
                 (yyval.exprPoint) = comp;
             }
-#line 1613 "parser.tab.cpp"
+#line 1612 "parser.tab.cpp"
     break;
 
   case 36: /* condition: value EQ value  */
-#line 415 "parser.ypp"
+#line 414 "parser.ypp"
                            {
                 Condition* cond = new Condition();
                 cond->leftVal = (yyvsp[-2].valuePointer);
@@ -1621,11 +1620,11 @@ yyreduce:
                 cond->operand = "=";
                 (yyval.condPoint) = cond;
             }
-#line 1625 "parser.tab.cpp"
+#line 1624 "parser.tab.cpp"
     break;
 
   case 37: /* condition: value NEQ value  */
-#line 422 "parser.ypp"
+#line 421 "parser.ypp"
                               {
                 Condition* cond = new Condition();
                 cond->leftVal = (yyvsp[-2].valuePointer);
@@ -1633,11 +1632,11 @@ yyreduce:
                 cond->operand = "!=";
                 (yyval.condPoint) = cond;
             }
-#line 1637 "parser.tab.cpp"
+#line 1636 "parser.tab.cpp"
     break;
 
   case 38: /* condition: value LESS value  */
-#line 429 "parser.ypp"
+#line 428 "parser.ypp"
                                {
                 Condition* cond = new Condition();
                 cond->leftVal = (yyvsp[-2].valuePointer);
@@ -1645,11 +1644,11 @@ yyreduce:
                 cond->operand = "<";
                 (yyval.condPoint) = cond;
             }
-#line 1649 "parser.tab.cpp"
+#line 1648 "parser.tab.cpp"
     break;
 
   case 39: /* condition: value MORE value  */
-#line 436 "parser.ypp"
+#line 435 "parser.ypp"
                                {
                 Condition* cond = new Condition();
                 cond->leftVal = (yyvsp[-2].valuePointer);
@@ -1657,11 +1656,11 @@ yyreduce:
                 cond->operand = ">";
                 (yyval.condPoint) = cond;
             }
-#line 1661 "parser.tab.cpp"
+#line 1660 "parser.tab.cpp"
     break;
 
   case 40: /* condition: value LEQ value  */
-#line 443 "parser.ypp"
+#line 442 "parser.ypp"
                               {
                 Condition* cond = new Condition();
                 cond->leftVal = (yyvsp[-2].valuePointer);
@@ -1669,11 +1668,11 @@ yyreduce:
                 cond->operand = "<=";
                 (yyval.condPoint) = cond;
             }
-#line 1673 "parser.tab.cpp"
+#line 1672 "parser.tab.cpp"
     break;
 
   case 41: /* condition: value MEQ value  */
-#line 450 "parser.ypp"
+#line 449 "parser.ypp"
                               {
                 Condition* cond = new Condition();
                 cond->leftVal = (yyvsp[-2].valuePointer);
@@ -1681,59 +1680,59 @@ yyreduce:
                 cond->operand = ">=";
                 (yyval.condPoint) = cond;
             }
-#line 1685 "parser.tab.cpp"
+#line 1684 "parser.tab.cpp"
     break;
 
   case 42: /* value: NUM  */
-#line 458 "parser.ypp"
+#line 457 "parser.ypp"
                 {
                 Number* num = new Number();
                 num->val = std::to_string((yyvsp[0].ptoken).val);
                 (yyval.valuePointer)=num;
             }
-#line 1695 "parser.tab.cpp"
+#line 1694 "parser.tab.cpp"
     break;
 
   case 43: /* value: identifier  */
-#line 463 "parser.ypp"
+#line 462 "parser.ypp"
                         { (yyval.valuePointer) = (yyvsp[0].identPointer); }
-#line 1701 "parser.tab.cpp"
+#line 1700 "parser.tab.cpp"
     break;
 
   case 44: /* identifier: PIDENTIFIER  */
-#line 465 "parser.ypp"
+#line 464 "parser.ypp"
                         {
                     Identifier* ident = new Identifier();
                     ident->val = *(yyvsp[0].ptoken).str;
                     (yyval.identPointer)=ident;
                 }
-#line 1711 "parser.tab.cpp"
+#line 1710 "parser.tab.cpp"
     break;
 
   case 45: /* identifier: PIDENTIFIER LSQ NUM RSQ  */
-#line 470 "parser.ypp"
+#line 469 "parser.ypp"
                                       {
                     IndentifierArrNumber* ident = new IndentifierArrNumber();
                     ident->val = *(yyvsp[-3].ptoken).str;
                     ident->address = std::to_string((yyvsp[-1].ptoken).val);
                     (yyval.identPointer) = ident;
                 }
-#line 1722 "parser.tab.cpp"
+#line 1721 "parser.tab.cpp"
     break;
 
   case 46: /* identifier: PIDENTIFIER LSQ PIDENTIFIER RSQ  */
-#line 476 "parser.ypp"
+#line 475 "parser.ypp"
                                               {
                     IndentifierArrPid* ident = new IndentifierArrPid();
                     ident->val = *(yyvsp[-3].ptoken).str;
                     ident->address = *(yyvsp[-1].ptoken).str;
                     (yyval.identPointer) = ident;
                 }
-#line 1733 "parser.tab.cpp"
+#line 1732 "parser.tab.cpp"
     break;
 
 
-#line 1737 "parser.tab.cpp"
+#line 1736 "parser.tab.cpp"
 
       default: break;
     }
@@ -1926,7 +1925,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 483 "parser.ypp"
+#line 482 "parser.ypp"
 
 
 int yyerror(std::string s) {

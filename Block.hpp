@@ -24,12 +24,13 @@ class BlockRepresentation{
 public:
     std::map<int, Block*> blockMap;
     Block* initialBlock;
+    std::map<std::string, Block*> procedureBBs;
     int blockIndexes=0;
 
     Block* DFS(Instruction* current);
     void setBB(Instruction* first);
-    
-    void print();
+    void addProcedureBB(Instruction* first, std::string name);
+    void print(Block* starting);
 };
 
 #endif
