@@ -67,3 +67,15 @@ bool Declaration::declare(Identifier* var){
 bool Args::addArg(Identifier* var){
     argsVec.push_back(var);
 }
+
+void Expression::test(){
+
+}
+
+void ExprComplex::test(){
+
+}
+
+void ExprSimple::test(){
+    
+}

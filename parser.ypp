@@ -171,7 +171,10 @@ program_all: procedures main {
                     program->procedures = $1;
                     $$=program;
                     program->semantic();
-                    program->printer();
+                    //program->printer();
+                    program->generateBB();
+                    std::cout<<program->BBs->blockIndexes;
+                    program->BBs->print();
                 }
 ;
 procedures: procedures PROCEDURE proc_head IS declarations IN commands END {
@@ -232,7 +235,7 @@ command:    identifier ASSIGN expression SEMICOLON {
                     conditional->nextIfFalse = $6->getHead();
                     Merger *merger = new Merger();
                     //Instruction *merger = new Instruction();
-                    //conditional->next = merger;
+                    conditional->next = merger;
                     $4->getTail()->next = merger;
                     $6->getTail()->next = merger;
                     $$ = conditional;
@@ -253,17 +256,27 @@ command:    identifier ASSIGN expression SEMICOLON {
             | WHILE condition DO commands ENDWHILE {
                     ConditionalWhile *loop = new ConditionalWhile();
                     loop->cond = $2;
+                    // loop->nextIfTrue = $4->getHead();
+                    // Merger *merger = new Merger();
+                    // $4->getTail()->next = merger;
+                    // loop->next = merger
+                    // $$ = loop;
+
+                    Merger *merger = new Merger();
+                    merger->next = $4->getHead();
+                    $4->getTail()->next = loop;
                     loop->nextIfTrue = $4->getHead();
-                    //$4->getTail()->next = loop;
-                    $$ = loop;
+                    $$ = merger;
                     //Merger niepotrzebny, bo bierzemy wskaznik na NEXT. 
                     //delete($4);
                 }
             | REPEAT commands UNTIL condition SEMICOLON {
                     ConditionalRepeat *loop = new ConditionalRepeat();
+                    Merger *merger = new Merger();
                     loop->cond=$4;
+                    loop->next = merger;
                     //$$ = $2->getHead();
-                    //$2->getTail()->next = loop;
+                    $2->getTail()->next = merger;
                     loop->nextIfTrue = $2->getHead();
                     $$ = loop;
                     //delete($2);

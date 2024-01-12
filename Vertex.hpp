@@ -5,23 +5,26 @@
 #include <string>
 #include <map>
 #include "./Types.hpp"
+#include "./Block.hpp"
 
 class Instruction{
 public:
     Instruction();
     bool visited = false; //variable for DFS during semantic analisys
     bool isConditional = false;
+    int blockIndex = -1;
     unsigned int index;
     Instruction* next;
+
 
     virtual bool isCall();
     virtual std::vector<Value*> getVars();
     virtual std::vector<Instruction*> getNext();
-
+    virtual std::string print();
 };
 
 class Merger: public Instruction{
-
+    std::string print();
 };
 
 class ConditionalSimple: public Instruction{
@@ -32,6 +35,7 @@ public:
 
     std::vector<Value*> getVars();
     virtual std::vector<Instruction*> getNext();
+    virtual std::string print();
 };
 
 class Conditional: public ConditionalSimple{
@@ -39,13 +43,15 @@ public:
     Instruction* nextIfFalse;
 
     std::vector<Instruction*> getNext();
+    std::string print();
 };
 
 class ConditionalWhile: public ConditionalSimple{
-
+    std::string print();
 };
 
 class ConditionalRepeat: public ConditionalSimple{
+    std::string print();
 
 };
 
@@ -55,6 +61,7 @@ public:
     Identifier* identifier;
 
     std::vector<Value*> getVars();
+    std::string print();
 };
 
 class Procedure_call: public Instruction{
@@ -64,6 +71,7 @@ public:
 
     std::vector<Value*> getVars();
     bool isCall();
+    //void print();
 };
 
 class Write: public Instruction{
@@ -71,12 +79,14 @@ public:
     Value* val;
 
     std::vector<Value*> getVars();
+    //void print();
 };
 
 class Read: public Instruction{
 public:
     Identifier* ident;
     std::vector<Value*> getVars();
+    //void print();
 };
 
 class LinkedCommands{

@@ -48,16 +48,19 @@ class Expression{
 public:
     Value* left;
     Value* right=nullptr;
+
+    virtual void test();
 };
 
 class ExprSimple: public Expression{
-
+public:
+    void test();
 };
 
 class ExprComplex: public Expression{
 public:
-    
     std::string operand;
+    void test();
 };
 
 class Condition {

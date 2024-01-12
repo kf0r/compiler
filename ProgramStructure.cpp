@@ -323,62 +323,27 @@ bool Program::semantic(){
     }
 }
 
-void Program::printer(){
-    std::stack<Instruction*> instStack;
-    instStack.push(main->comms->getHead());
-    while(!instStack.empty()){
-        Instruction* top = instStack.top();
-        instStack.pop();
-        if(top->visited){
-            std::vector<Value*> identifiers = top->getVars();
-            for(int j=0; j<identifiers.size();j++){
-                std::cout<<identifiers[j]->val<<std::endl;
-            }
-            top->visited=false;
-            for(int j=0; j<top->getNext().size();j++){
-                if(top->getNext()[j]!=nullptr){
-                    if(top->getNext()[j]->visited){
-                        instStack.push(top->getNext()[j]);
-                    }
-                }
-            }
-        }
-    }
-}
+// void Program::printer(){
+//     std::stack<Instruction*> instStack;
+//     instStack.push(main->comms->getHead());
+//     while(!instStack.empty()){
+//         Instruction* top = instStack.top();
+//         instStack.pop();
+//         if(top->visited){
+//             top->print();
+//             top->visited=false;
+//             for(int j=0; j<top->getNext().size();j++){
+//                 if(top->getNext()[j]!=nullptr){
+//                     if(top->getNext()[j]->visited){
+//                         instStack.push(top->getNext()[j]);
+//                     }
+//                 }
+//             }
+//         }
+//     }
+// }
 
-Block* Program::generadeBB(){
-    std::stack<Instruction*> instStack;
-    instStack.push(main->comms->getHead());
-    while(!instStack.empty()){
-        Instruction* top = instStack.top();
-        instStack.pop();
-        if(!top->visited){
-            top->visited=true;
-            if(top->getNext().size()>1){
-                ////somehow manage with branching
-            }else{
-                ///put top into current BB
-            }
-        }
-    }
-}
-
-Block* Program::DFS(Instruction* current){
-    Block* block = new Block();
-    while(current->getNext().size()==1){
-        Instruction* singleChilded = current;
-        if(!dynamic_cast <Merger*> (singleChilded)){
-            block->inst.push_back(singleChilded);
-        }else{
-            
-        }
-        current = current->next;
-    }
-    if(current->getNext().size()==0){
-        return block;
-    }else{
-        for(int i=0; i<current->getNext().size();i++){
-
-        }
-    }
+void Program::generateBB(){
+    BBs = new BlockRepresentation();
+    BBs->setBB(main->comms->head);
 }

@@ -24,6 +24,17 @@ bool Instruction::isCall(){
     return false;
 }
 
+std::string Instruction::print(){
+    return "EMPTY INSTRUCTION\n";
+}
+
+///////////////////////////////////////////////
+//MERGER
+///////////////////////////////////////////////
+std::string Merger::print(){
+    return "MERGER\n";
+}
+
 ///////////////////////////////////////////////
 //CONDITIONAL SIMPLE
 ///////////////////////////////////////////////
@@ -48,6 +59,10 @@ std::vector<Instruction*> ConditionalSimple::getNext(){
     return nexts;
 }
 
+std::string ConditionalSimple::print(){
+   return "IF " + cond->leftVal->val + cond->operand + cond->rightVal->val+":\n";
+}
+
 ///////////////////////////////////////////////
 //CONDITIONAL
 ///////////////////////////////////////////////
@@ -55,8 +70,26 @@ std::vector<Instruction*> Conditional::getNext(){
     std::vector<Instruction*> nexts;
     nexts.push_back(next);
     nexts.push_back(nextIfTrue);
-    nexts.push_back(nextIfFalse);
+    //nexts.push_back(nextIfFalse);
     return nexts;
+}
+
+std::string Conditional::print(){
+    return "IF "+cond->leftVal->val+ cond->operand+cond->rightVal->val+" ELSE: \n";
+}
+
+///////////////////////////////////////////////
+//CONDITIONAL WHILE
+///////////////////////////////////////////////
+std::string ConditionalWhile::print(){
+    return "WHILE "+cond->leftVal->val+cond->operand+cond->rightVal->val+"DO \n";
+}
+
+///////////////////////////////////////////////
+//CONDITIONAL REPEAT
+///////////////////////////////////////////////
+std::string ConditionalRepeat::print(){
+    return "REPEAT UNITL "+cond->leftVal->val+cond->operand+cond->rightVal->val+"DO \n";
 }
 
 ///////////////////////////////////////////////
@@ -79,6 +112,14 @@ std::vector<Value*> Assignment::getVars(){
     return vars;
 }
 
+std::string Assignment::print(){
+    if(dynamic_cast<ExprComplex*>(expression)){ //tu jest linijka 116
+        ExprComplex* comp = dynamic_cast<ExprComplex*>(expression);
+        return"ASSIGN "+identifier->val+" = "+comp->left->val+comp->operand+comp->right->val+"\n";
+    }else{
+        return"ASSIGN "+identifier->val+" = "+expression->left->val+"\n";
+    }
+}
 ///////////////////////////////////////////////
 //PROCEDURE CALLL
 ///////////////////////////////////////////////
