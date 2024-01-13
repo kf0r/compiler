@@ -57,9 +57,14 @@ LowLevelBlock* LowLevelProgram::translateBlock(Block* block){
 }
 
 void LowLevelProgram::handleAssignment(Assignment* assign, std::vector<std::string>& translated){
-    //check if simple
-    //if yes, handle value, put to given val in arch;
-    // if no, handle two values, do whatever, put val in arch;
+
+    if(dynamic_cast<ExprComplex*>(assign->expression)){
+        ExprComplex* complex = dynamic_cast<ExprComplex*>(assign->expression);
+        architecture->getVal(complex->right);
+        architecture->getValIntoA(complex->left);
+        
+
+    }
 }
 
 void LowLevelProgram::handleWrite(Write* write, std::vector<std::string>& translated){
