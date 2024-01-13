@@ -12,6 +12,10 @@ bool Program::validateCallProc(Procedure_call* call, Procedure* current){
         std::cout<<"Wywołanie nieznanej funkcji "<<call->name<<" w "<<current->head->name<<std::endl; 
         return false;
     }
+    if(call->name==current->head->name){
+        std::cout<<"Rekurencyjne wywolanie "<<call->name<<" w "<<current->head->name<<std::endl; 
+        return false;
+    }
     if(proceduresTable[call->name]->head->args->argsVec.size()!=call->args->argsVec.size()){
         std::cout<<"Nieprawidłowa ilość argumentow funkcji " <<call->name<<" w "<<current->head->name<<std::endl;
         return false;

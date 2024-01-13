@@ -22,6 +22,7 @@ public:
     void optimiseConditions();
     void removeUnreachable();
     void simplifyAlgebraic();
+    void pruneUnreachable();
 };
 
 class BlockRepresentation{

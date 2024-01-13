@@ -19,7 +19,6 @@ std::string Block::toString(){
     return repr+"";
 }
 
-
 void BlockRepresentation::setBB(Instruction* initial){
     initialBlock = DFS(initial);
 }
