@@ -2,9 +2,16 @@
 
 //yep can be broken down to subprocedures but not now. Im in hurry, copy paste is faster.
 LowLevelProgram::LowLevelProgram(Program* whole){
+    for (int i=0; i<8; i++){
+        regs[i].number = i;
+        regs[i].index = static_cast<char>(ASCII_LOWER_A+i);
+        regs[i].locked=false;
+        regs[i].stored=nullptr;
+        regs[i].indexStored = nullptr;
+    }
+
     int memAddr=0;
     program = whole;
-    architecture = new Arch();
     
     for(auto pair : program->main->symbolTable){
         if(memAddr>MAX_MEM_SIZE||memAddr<0){
@@ -57,12 +64,10 @@ LowLevelBlock* LowLevelProgram::translateBlock(Block* block){
 }
 
 void LowLevelProgram::handleAssignment(Assignment* assign, std::vector<std::string>& translated){
-
     if(dynamic_cast<ExprComplex*>(assign->expression)){
         ExprComplex* complex = dynamic_cast<ExprComplex*>(assign->expression);
-        architecture->getVal(complex->right);
-        architecture->getValIntoA(complex->left);
-        
+        getVal()
+    }else{
 
     }
 }
@@ -85,8 +90,4 @@ void LowLevelProgram::handleCond(Condition* cond, std::vector<std::string>& tran
 void LowLevelProgram::handleCall(Procedure_call* call, std::vector<std::string>& translated){
     //dump regs
     //build address of given val, store in procedure memory, increase memory (((optimalisation)))
-}
-
-std::string LowLevelProgram::handleVal(Value* value){
-
 }

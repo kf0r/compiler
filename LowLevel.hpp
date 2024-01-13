@@ -8,6 +8,20 @@
 #include "./ProgramStructure.hpp"
 
 unsigned long long MAX_MEM_SIZE = 4611686018427388000;
+const int ASCII_LOWER_A = 97;
+
+class Register{
+public:
+    int number;
+    char index;
+
+    //lock during operations, so architecture wouldnt free register thats currently in use
+    bool locked;
+    // Variable* stored;
+    // Identifier* identifier;
+    Value* stored;
+    Value* indexStored;
+};  
 
 class LowLevelBlock{
 public:
@@ -23,9 +37,9 @@ public:
 
 class LowLevelProgram{
 public:
+    Register regs[8];
     Program* program;
     LowLevelBlock* initial;
-    Arch* architecture;
     bool isOverflow;
 
     LowLevelProgram(Program* wholeProgram);
@@ -37,7 +51,21 @@ public:
     void handleRead(Read* read, std::vector<std::string>& translated);
     void handleCond(Condition* cond, std::vector<std::string>& translated);
     void handleCall(Procedure_call* call, std::vector<std::string>& translated);
-    std::string handleVal(Value* value);
+
+    //get variable into free register
+    void getVal(Value* val,std::vector<std::string>& translated);
+
+    //get var into a to do sth
+    void getValIntoA(Value* val,std::vector<std::string>& translated);
+
+    //puts var in a into free register, if value is index of array it stores this array in memory
+    void putVal(Value* val,std::vector<std::string>& translated);
+
+    //clear given register, store variable in memory
+    void freeRegister(int num,std::vector<std::string>& translated);
+
+    //put all variables into memory when calling procedures or jumping BBs or doing any operation that needs more regs like division
+    void dumpRegs(std::vector<std::string>& translated);
 };
 
 #endif
