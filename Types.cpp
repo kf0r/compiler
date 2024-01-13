@@ -39,7 +39,7 @@ bool IndentifierArrNumber::isArray(){
 }
 
 unsigned long long IndentifierArrNumber::getOffset(){
-    return stoi(address);
+    return stoi(address)-1;
 }
 
 ///////////////////////////////////////////////

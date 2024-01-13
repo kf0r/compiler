@@ -18,6 +18,10 @@ public:
     int index;
 
     std::string toString();
+    void commonSubexpression();
+    void optimiseConditions();
+    void removeUnreachable();
+    void simplifyAlgebraic();
 };
 
 class BlockRepresentation{
