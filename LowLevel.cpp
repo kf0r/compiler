@@ -70,6 +70,7 @@ LowLevelBlock* LowLevelProgram::translateBlock(Block* block){
 }
 
 void LowLevelProgram::handleAssignment(Assignment* assign, std::vector<std::string>& translated){
+    //while assigning to variable we have to check if it wasnt index of any array currenty in, so we can dump it.
     if(dynamic_cast<ExprComplex*>(assign->expression)){
         ExprComplex* complex = dynamic_cast<ExprComplex*>(assign->expression);
         int rightReg = getVal(complex->right,translated);
@@ -208,16 +209,6 @@ int LowLevelProgram::putVal(Value* val, std::vector<std::string>& translated){
     }else if(dynamic_cast<IndentifierArrPid*>(val)){
 
     }else if(dynamic_cast<Identifier*>(val)){
-        //we are changing variable. We should check if it wasnt index of any array in registers
-        bool wasAddres = false;
-        int adress = 0;
-        for(int i=1; i<7;i++){
-            if(regs[i].indexStored==val->val){
-                wasAddres==true;
-                adress=i;
-                break;
-            }
-        }
 
     }
 }

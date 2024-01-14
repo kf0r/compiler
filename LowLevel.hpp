@@ -18,8 +18,7 @@ public:
     //lock during operations, so architecture wouldnt free register thats currently in use
     bool locked;
     bool changed; //if has changed then store during dump
-    // Variable* stored;
-    // Identifier* identifier;
+    
     Value* stored;
     std::string indexStored;
 };  
