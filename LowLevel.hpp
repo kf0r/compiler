@@ -34,6 +34,7 @@ public:
     //lock during operations, so architecture wouldnt free register thats currently in use
     bool locked;
     bool changed; //if has changed then store during dump
+    bool wasNew; //if value inside was new(), then when dumping regs we should delete() it to oppose memory leaks;
 
     Value* stored;
     std::string indexStored;
@@ -84,6 +85,8 @@ public:
     void dumpRegs(std::vector<std::string>& translated);
 
     int getValFromString(std::string val,std::vector<std::string>& translated);
+
+    int getValFromNumber(unsigned long long num, std::vector<std::string>& translated);
 
     //check if any array in registers is indexed as val, if yes store it 
     void valuePrecheck(Value* val, std::vector<std::string>& translated);
