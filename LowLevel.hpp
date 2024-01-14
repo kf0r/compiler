@@ -17,10 +17,11 @@ public:
 
     //lock during operations, so architecture wouldnt free register thats currently in use
     bool locked;
+    bool changed; //if has changed then store during dump
     // Variable* stored;
     // Identifier* identifier;
     Value* stored;
-    Value* indexStored;
+    std::string indexStored;
 };  
 
 class LowLevelBlock{
@@ -53,19 +54,21 @@ public:
     void handleCall(Procedure_call* call, std::vector<std::string>& translated);
 
     //get variable into free register
-    void getVal(Value* val,std::vector<std::string>& translated);
+    int getVal(Value* val,std::vector<std::string>& translated);
 
     //get var into a to do sth
     void getValIntoA(Value* val,std::vector<std::string>& translated);
 
     //puts var in a into free register, if value is index of array it stores this array in memory
-    void putVal(Value* val,std::vector<std::string>& translated);
+    int putVal(Value* val,std::vector<std::string>& translated);
 
     //clear given register, store variable in memory
     void freeRegister(int num,std::vector<std::string>& translated);
 
     //put all variables into memory when calling procedures or jumping BBs or doing any operation that needs more regs like division
     void dumpRegs(std::vector<std::string>& translated);
+
+    int getValFromString(std::string val,std::vector<std::string>& translated);
 };
 
 #endif
