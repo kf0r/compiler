@@ -71,16 +71,114 @@ LowLevelBlock* LowLevelProgram::translateBlock(Block* block){
 
 void LowLevelProgram::handleAssignment(Assignment* assign, std::vector<std::string>& translated){
     //storing into x[a] results in IMMEDIATE storage in memory
+    valuePrecheck(assign->identifier, translated);
     //anything else isn't problematic so no problem :)
+    if(dynamic_cast<ExprComplex*>(assign->expression)){
+        ExprComplex* complex =  dynamic_cast<ExprComplex*>(assign->expression);
+        int rightSide = getVal(complex->right, translated);
+        regs[rightSide].locked = true;
+        getValIntoA(complex->left, translated);
+        regs[rightSide].locked = false;
+        if(complex->operand=="+"){
+            add(rightSide, translated);
+        }else if(complex->operand=="-"){
+            sub(rightSide, translated);
+        }else if(complex->operand=="*"){
+            mult(rightSide, translated);
+        }else if(complex->operand=="/"){
+            div(rightSide, translated);
+        }else if(complex->operand=="%"){
+            mod(rightSide, translated);
+        }
+        putVal(assign->identifier, translated);
+    }else if(dynamic_cast<ExprSimple*>(assign->expression)){
+        ExprSimple* simp = dynamic_cast<ExprSimple*>(assign->expression);
+        getValIntoA(simp->left, translated);
+        putVal(assign->identifier, translated);
+    }
+    valuePostcheck(assign->identifier, translated);
 }
 
 void LowLevelProgram::handleWrite(Write* write, std::vector<std::string>& translated){
+    getValIntoA(write->val, translated);
+    //can be further optimised to put val back into registers, but now it'll do
+    translated.push_back("WRITE");
 }
 
 void LowLevelProgram::handleRead(Read* read, std::vector<std::string>& translated){
+    valuePrecheck(read->ident, translated);
+    translated.push_back("READ");
+    putVal(read->ident, translated);
+    valuePostcheck(read->ident, translated);
 }
 
+///////////////////////////////////////////////////////
+//////////a>b -> a-b -> JPOS true JUMP false///////////
+//////////a>=b -> b-a -> JZERO true JUMP false/////////
+//a==b -> a-b -> JPOS false b-a JZERO true JUMP false//
+///////////////////////////////////////////////////////
 void LowLevelProgram::handleCond(Condition* cond, std::vector<std::string>& translated){
+    if(cond->operand==">"){
+        int right = getVal(cond->rightVal, translated);
+        regs[right].locked = true;
+        getValIntoA(cond->leftVal, translated);
+        regs[right].locked = false;
+        sub(right, translated);
+        translated.push_back("JPOS true");
+        translated.push_back("JUMP false");
+    }else if(cond->operand==">="){
+        int left = getVal(cond->leftVal, translated);
+        regs[left].locked = true;
+        getValIntoA(cond->rightVal, translated);
+        regs[left].locked = false;
+        sub(left, translated);
+        translated.push_back("JZERO true");
+        translated.push_back("JUMP false");
+    }else if(cond->operand=="=="){
+        int right = getVal(cond->rightVal, translated);
+        regs[right].locked = true;
+        int left = getVal(cond->leftVal, translated);
+        regs[left].locked = true;
+        getValIntoA(cond->leftVal, translated);
+        sub(right, translated);
+        translated.push_back("JPOS false");
+        getValIntoA(cond->rightVal, translated);
+        sub(left, translated);
+        translated.push_back("JPOS false");
+        translated.push_back("JUMP true");
+        regs[left].locked = false;
+        regs[right].locked = false;
+    }else if(cond->operand=="!="){
+        int right = getVal(cond->rightVal, translated);
+        regs[right].locked = true;
+        int left = getVal(cond->leftVal, translated);
+        regs[left].locked = true;
+        getValIntoA(cond->leftVal, translated);
+        sub(right, translated);
+        translated.push_back("JPOS true");
+        getValIntoA(cond->rightVal, translated);
+        sub(left, translated);
+        translated.push_back("JPOS true");
+        translated.push_back("JUMP false");
+        regs[left].locked = false;
+        regs[right].locked = false;
+    }else if(cond->operand=="<"){
+        int left = getVal(cond->leftVal, translated);
+        regs[left].locked = true;
+        getValIntoA(cond->rightVal, translated);
+        regs[left].locked = false;
+        sub(left, translated);
+        translated.push_back("JPOS true");
+        translated.push_back("JUMP false");
+    }else if(cond->operand=="<="){
+        int right = getVal(cond->rightVal, translated);
+        regs[right].locked = true;
+        getValIntoA(cond->leftVal, translated);
+        regs[right].locked = false;
+        sub(right, translated);
+        translated.push_back("JZERO true");
+        translated.push_back("JUMP false");
+    }
 }
 
 void LowLevelProgram::handleCall(Procedure_call* call, std::vector<std::string>& translated){
@@ -89,10 +187,14 @@ void LowLevelProgram::handleCall(Procedure_call* call, std::vector<std::string>&
 }
 
 int LowLevelProgram::putVal(Value* val, std::vector<std::string>& translated){
+    //set changed to true in register, so always when dumping we should store it
 }
 
 //check it in the mornign, now im so exhausted that i dont know whats going on xD
 int LowLevelProgram::getVal(Value* val, std::vector<std::string>& translated){
-
+    
 }
 
+void LowLevelProgram::getValIntoA(Value* val, std::vector<std::string>& translated){
+
+}

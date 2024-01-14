@@ -84,6 +84,22 @@ public:
     void dumpRegs(std::vector<std::string>& translated);
 
     int getValFromString(std::string val,std::vector<std::string>& translated);
+
+    //check if any array in registers is indexed as val, if yes store it 
+    void valuePrecheck(Value* val, std::vector<std::string>& translated);
+
+    //check if any array in registers is indexed as val, if remove from registers
+    void valuePostcheck(Value* val, std::vector<std::string>& translated);
+
+    void add(int reg, std::vector<std::string>& translated);
+
+    void sub(int reg, std::vector<std::string>& translated);
+
+    void mult(int reg, std::vector<std::string>& translated);
+
+    void div(int reg, std::vector<std::string>& translated);
+
+    void mod(int reg, std::vector<std::string>& translated);
 };
 
 #endif
