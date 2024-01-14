@@ -10,6 +10,22 @@
 unsigned long long MAX_MEM_SIZE = 4611686018427388000;
 const int ASCII_LOWER_A = 97;
 
+////////
+//IDEA//
+////////
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+//registers "a" and e are special, "a" because its loads, stores, puts and gets                      //
+//"e" because it will build addresses and values                                                     //
+//when getting variable, its value will be builded in "e" and variable will be loaded into "a"       //
+//if theres no free register, one unlocked register will be freed and variable will be stored there. //
+//                                                                                                   //
+//when getting array, it will be checked if index of variable is already in register.                //
+//If it is, adress will be builded in "a" and added to index, loaded, put into free register,        //
+//after operation on indexed array register is freed                                                 //
+//                                                                                                   //
+//when getting array numbered, we tread it as normal variable, but also contain number in indexStored//
+///////////////////////////////////////////////////////////////////////////////////////////////////////
 class Register{
 public:
     int number;
@@ -18,7 +34,7 @@ public:
     //lock during operations, so architecture wouldnt free register thats currently in use
     bool locked;
     bool changed; //if has changed then store during dump
-    
+
     Value* stored;
     std::string indexStored;
 };  
@@ -55,7 +71,7 @@ public:
     //get variable into free register
     int getVal(Value* val,std::vector<std::string>& translated);
 
-    //get var into a to do sth
+    //get var into "a"
     void getValIntoA(Value* val,std::vector<std::string>& translated);
 
     //puts var in a into free register, if value is index of array it stores this array in memory
