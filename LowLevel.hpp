@@ -15,8 +15,9 @@ const int ASCII_LOWER_A = 97;
 ////////
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
-//registers "a" and e are special, "a" because its loads, stores, puts and gets                      //
+//registers "a", "f" "e" are special, "a" because its loads, stores, puts and gets                   //
 //"e" because it will build addresses and values                                                     //
+//"f" is in case all registers are jammed and we have to free one without losing data in a           //
 //when getting variable, its value will be builded in "e" and variable will be loaded into "a"       //
 //if theres no free register, one unlocked register will be freed and variable will be stored there. //
 //                                                                                                   //

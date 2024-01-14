@@ -28,6 +28,23 @@ LowLevelProgram::LowLevelProgram(Program* whole){
         memAddr+=pair.second->offset;
     }
     for(int i=0; i<program->procedures->procedures.size();i++){
+        program->procedures->procedures[i]->initialAddr = memAddr;
+
+        for(i=0; i<program->procedures->procedures[i]->head->args->argsVec.size();i++){
+            if(memAddr>MAX_MEM_SIZE||memAddr<0){
+                isOverflow=true;
+            }
+            Identifier* callable =program->procedures->procedures[i]->head->args->argsVec[i];
+            Variable* var = program->procedures->procedures[i]->callableTable[callable->val];
+            var->adress = memAddr;
+            memAddr++;
+            memAddr+=var->offset;
+        }
+        if(memAddr>MAX_MEM_SIZE||memAddr<0){
+            isOverflow=true;
+        }
+        program->procedures->procedures[i]->retAddr = memAddr;
+        memAddr++;
         for(auto pair : program->procedures->procedures[i]->symbolTable){
             if(memAddr>MAX_MEM_SIZE||memAddr<0){
                 isOverflow=true;
@@ -36,19 +53,7 @@ LowLevelProgram::LowLevelProgram(Program* whole){
             memAddr++;
             memAddr+=pair.second->offset;
         }
-        for(auto pair : program->procedures->procedures[i]->callableTable){
-            if(memAddr>MAX_MEM_SIZE||memAddr<0){
-                isOverflow=true;
-            }
-            pair.second->adress = memAddr;
-            memAddr++;
-            memAddr+=pair.second->offset;
-        }
-        if(memAddr>MAX_MEM_SIZE||memAddr<0){
-            isOverflow=true;
-        }
-        program->procedures->procedures[i]->retAddr = memAddr;
-        memAddr++;
+
     }
 }
 
@@ -183,7 +188,7 @@ void LowLevelProgram::handleCond(Condition* cond, std::vector<std::string>& tran
 
 int LowLevelProgram::getVal(Value* val, std::vector<std::string>& translated){
     if(dynamic_cast<Number*>(val)){
-        for(int i=1; i<7;i++){
+        for(int i=1; i<6;i++){
             if(regs[i].stored!=nullptr){
                 if(val->val==regs[i].stored->val){
                     return i;
@@ -191,7 +196,7 @@ int LowLevelProgram::getVal(Value* val, std::vector<std::string>& translated){
             }
         }
         
-        for(int i=1; i<7;i++){
+        for(int i=1; i<6;i++){
             if(regs[i].stored==nullptr){
                 std::string operation = "BUILD ";
                 operation.push_back(static_cast<char>(ASCII_LOWER_A+i));
@@ -202,7 +207,7 @@ int LowLevelProgram::getVal(Value* val, std::vector<std::string>& translated){
             }
         }
 
-        for(int i=1; i<7; i++){
+        for(int i=1; i<6; i++){
             if(!regs[i].locked){
                 freeRegister(i, translated);
                 std::string operation = "BUILD ";
@@ -215,7 +220,7 @@ int LowLevelProgram::getVal(Value* val, std::vector<std::string>& translated){
         }
     }else if(dynamic_cast<IndentifierArrPid*>(val)){
         IndentifierArrPid* array = dynamic_cast<IndentifierArrPid*>(val);
-        for(int i=1; i<7;i++){
+        for(int i=1; i<6;i++){
             if(regs[i].stored!=nullptr){
                 if(val->val==regs[i].stored->val&&array->address==regs[i].indexStored){
                     return i;
@@ -225,7 +230,7 @@ int LowLevelProgram::getVal(Value* val, std::vector<std::string>& translated){
 
         int addressRegister = getValFromString(array->address, translated);
         regs[addressRegister].locked = true;
-        for(int i=1; i<7; i++){
+        for(int i=1; i<6; i++){
             if(regs[i].stored==nullptr){
                 translated.push_back("BUILD a "+std::to_string(program->main->symbolTable[array->val]->adress));
                 std::string operation = "ADD ";
@@ -242,7 +247,7 @@ int LowLevelProgram::getVal(Value* val, std::vector<std::string>& translated){
             }
         }
 
-        for(int i=1; i<7; i++){
+        for(int i=1; i<6; i++){
             if(!regs[i].locked){
                 freeRegister(i, translated);
                 translated.push_back("BUILD a "+std::to_string(program->main->symbolTable[array->val]->adress));
@@ -262,7 +267,7 @@ int LowLevelProgram::getVal(Value* val, std::vector<std::string>& translated){
         
     }else if(dynamic_cast<IndentifierArrNumber*>(val)){
         IndentifierArrNumber* array = dynamic_cast<IndentifierArrNumber*>(val);
-        for(int i=1; i<7;i++){
+        for(int i=1; i<6;i++){
             if(regs[i].stored!=nullptr){
                 if(val->val==regs[i].stored->val&&array->address==regs[i].indexStored){
                     return i;
@@ -273,7 +278,7 @@ int LowLevelProgram::getVal(Value* val, std::vector<std::string>& translated){
         int addressRegister = getValFromNumber(stoull(array->address), translated);
         regs[addressRegister].locked = true;
 
-        for(int i=1; i<7; i++){
+        for(int i=1; i<6; i++){
             if(regs[i].stored==nullptr){
                 translated.push_back("BUILD a "+std::to_string(program->main->symbolTable[array->val]->adress));
                 std::string operation = "ADD ";
@@ -290,7 +295,7 @@ int LowLevelProgram::getVal(Value* val, std::vector<std::string>& translated){
             }
         }
 
-        for(int i=1; i<7; i++){
+        for(int i=1; i<6; i++){
             if(!regs[i].locked){
                 freeRegister(i, translated);
                 translated.push_back("BUILD a "+std::to_string(program->main->symbolTable[array->val]->adress));
@@ -307,9 +312,8 @@ int LowLevelProgram::getVal(Value* val, std::vector<std::string>& translated){
                 return i;
             }
         }
-        //check if theres 
     }else if(dynamic_cast<Identifier*>(val)){
-        for(int i=1; i<7;i++){
+        for(int i=1; i<6;i++){
             if(regs[i].stored!=nullptr){
                 if(val->val==regs[i].stored->val){
                     return i;
@@ -317,7 +321,7 @@ int LowLevelProgram::getVal(Value* val, std::vector<std::string>& translated){
             }
         }
         
-        for(int i=1; i<7;i++){
+        for(int i=1; i<6;i++){
             if(regs[i].stored==nullptr){
                 std::string operation = "BUILD ";
                 operation.push_back(static_cast<char>(ASCII_LOWER_A+i));
@@ -333,7 +337,7 @@ int LowLevelProgram::getVal(Value* val, std::vector<std::string>& translated){
             }
         }
 
-        for(int i=1; i<7; i++){
+        for(int i=1; i<6; i++){
             if(!regs[i].locked){
                 freeRegister(i, translated);
                 std::string operation = "BUILD ";
@@ -353,7 +357,7 @@ int LowLevelProgram::getVal(Value* val, std::vector<std::string>& translated){
 }
 
 int LowLevelProgram::getValFromString(std::string str, std::vector<std::string>& translated){
-    for(int i=1;i<7;i++){
+    for(int i=1;i<6;i++){
         if(regs[i].stored!=nullptr){
             if(regs[i].stored->val==str){
                 return i;
@@ -362,7 +366,7 @@ int LowLevelProgram::getValFromString(std::string str, std::vector<std::string>&
     }
     Identifier* id = new Identifier();
     id->val = str;
-    for(int i=1; i<7;i++){
+    for(int i=1; i<6;i++){
         if(regs[i].stored==nullptr){
             std::string operation = "BUILD ";
             operation.push_back(static_cast<char>(ASCII_LOWER_A+i));
@@ -378,7 +382,7 @@ int LowLevelProgram::getValFromString(std::string str, std::vector<std::string>&
         }
     }
 
-    for(int i=1; i<7;i++){
+    for(int i=1; i<6;i++){
         if(!regs[i].locked){
             freeRegister(i, translated);
             std::string operation = "BUILD ";
@@ -398,7 +402,7 @@ int LowLevelProgram::getValFromString(std::string str, std::vector<std::string>&
 
 int LowLevelProgram::getValFromNumber(unsigned long long num, std::vector<std::string>& translated){
     std::string str = std::to_string(num);
-    for(int i=1;i<7;i++){
+    for(int i=1;i<6;i++){
         if(regs[i].stored!=nullptr){
             if(regs[i].stored->val==str){
                 return i;
@@ -407,7 +411,7 @@ int LowLevelProgram::getValFromNumber(unsigned long long num, std::vector<std::s
     }
     Number* id = new Number();
     id->val = str;
-    for(int i=1; i<7;i++){
+    for(int i=1; i<6;i++){
         if(regs[i].stored==nullptr){
             std::string operation = "BUILD ";
             operation.push_back(static_cast<char>(ASCII_LOWER_A+i));
@@ -419,7 +423,7 @@ int LowLevelProgram::getValFromNumber(unsigned long long num, std::vector<std::s
         }
     }
     
-    for(int i=1; i<7; i++){
+    for(int i=1; i<6; i++){
         if(!regs[i].locked){
             freeRegister(i, translated);
             std::string operation = "BUILD ";
@@ -435,41 +439,400 @@ int LowLevelProgram::getValFromNumber(unsigned long long num, std::vector<std::s
 
 void LowLevelProgram::valuePrecheck(Value* val, std::vector<std::string>& translated){
     //if val is simple identifier then check if any indexStored == val->val. if so, store this. of course only if was changed
+    for(int i=1;i<6;i++){
+        if(regs[i].indexStored==val->val){
+            Value* stored = regs[i].stored;
+            bool wasAvaible = false; 
+            IndentifierArrPid* array = dynamic_cast<IndentifierArrPid*>(stored);
+            translated.push_back("BUILD e "+std::to_string(program->main->symbolTable[regs[i].stored->val]->adress));
+            for(int j=1;j<6;j++){
+                if(regs[j].stored!=nullptr){
+                    if(regs[j].stored->val==array->address){
+                        std::string operation = "GET ";
+                        operation.push_back(static_cast<char>(ASCII_LOWER_A+j));
+                        translated.push_back(operation);
+                        wasAvaible=true;
+                        break;
+                    }
+                }
+            }
+            if(!wasAvaible){
+                translated.push_back("BUILD a "+ std::to_string(program->main->symbolTable[array->address]->adress));
+            }
+            translated.push_back("ADD e");
+            translated.push_back("PUT e");
+            std::string operation = "GET ";
+            operation.push_back(static_cast<char>(ASCII_LOWER_A+i));
+            translated.push_back(operation);
+            translated.push_back("STORE e");
+        }
+    }
 }
 
 void LowLevelProgram::valuePostcheck(Value* val, std::vector<std::string>& translated){
     //if val is simple identifier then check if any indexStored == val->val. if so, DELETE IT, SET NULL
+    for(int i=1;i<6;i++){
+        if(regs[i].indexStored==val->val){
+            regs[i].indexStored = "";
+            regs[i].locked=false;
+            if(regs[i].wasNew){
+                delete(regs[i].stored);
+            }
+            regs[i].stored = nullptr;
+            regs[i].wasNew=false;
+            regs[i].changed = false;
+        }
+    }
 }
 
 void LowLevelProgram::handleCall(Procedure_call* call, std::vector<std::string>& translated){
-    //dump and do sth
+    dumpRegs(translated);
+    unsigned long long addr = program->proceduresTable[call->name]->initialAddr;    
+    translated.push_back("BUILD e "+std::to_string(addr));
+    for(int i=0;i<call->args->argsVec.size();i++){
+        Identifier* id = call->args->argsVec[i];
+        translated.push_back("BUILD a "+std::to_string(program->main->symbolTable[id->val]->adress));
+        translated.push_back("STORE e");
+        translated.push_back("INC e");
+    }
+    translated.push_back("STRK a");
+    translated.push_back("STORE e");
+    translated.push_back("JUMP procedure "+call->name);
+    return;
 }
 
 void LowLevelProgram::dumpRegs(std::vector<std::string>& translated){
-    //free each
+    for(int i=0; i<8; i++){
+        if(!regs[i].locked){
+            freeRegister(i, translated);
+        }
+    }
 }
 
 void LowLevelProgram::freeRegister(int num,std::vector<std::string>& translated){
     Value* stored = regs[num].stored;
     std::string index = regs[num].indexStored;
-    //check if if was changed!!
-    if(dynamic_cast<Number*>(stored)){
-        //we just set nulls and falses, easy
-    }else if(dynamic_cast<IndentifierArrPid*>(stored)){
+    if(regs[num].changed){
+        if(dynamic_cast<IndentifierArrPid*>(stored)){
         //x[a], check if a is avaible, if is then build x adress in a, add a, store num
         //if no then build adress a in e, load a into e, build x adress in a, add e, store num 
-    }else if(dynamic_cast<IndentifierArrNumber*>(stored)){
+            bool wasAvaible = false; 
+            IndentifierArrPid* array = dynamic_cast<IndentifierArrPid*>(stored);
+            translated.push_back("BUILD e "+std::to_string(program->main->symbolTable[regs[num].stored->val]->adress));
+            for(int i=1;i<6;i++){
+                if(regs[i].stored!=nullptr){
+                    if(regs[i].stored->val==array->address){
+                        std::string operation = "GET ";
+                        operation.push_back(static_cast<char>(ASCII_LOWER_A+i));
+                        translated.push_back(operation);
+                        wasAvaible=true;
+                        break;
+                    }
+                }
+            }
+            if(!wasAvaible){
+                translated.push_back("BUILD a "+ std::to_string(program->main->symbolTable[array->address]->adress));
+            }
+            translated.push_back("ADD e");
+            translated.push_back("PUT e");
+            std::string operation = "GET ";
+            operation.push_back(static_cast<char>(ASCII_LOWER_A+num));
+            translated.push_back(operation);
+            translated.push_back("STORE e");
+            
+        }else if(dynamic_cast<IndentifierArrNumber*>(stored)){
         //x[5], check if 5 is avaible, if is then build x adress in a, add 5, store num
-        //if no then build 5 in e, load a into e, build x adress in a, add e, store num 
-    }else if(dynamic_cast<Identifier*>(stored)){
+        //if no then build 5 in e, load a into e, build x adress in a, add e, store num
+            bool wasAvaible = false; 
+            IndentifierArrNumber* array = dynamic_cast<IndentifierArrNumber*>(stored);
+            translated.push_back("BUILD e "+std::to_string(program->main->symbolTable[regs[num].stored->val]->adress));
+            
+            for(int i=1;i<6;i++){
+                if(regs[i].stored!=nullptr){
+                    if(regs[i].stored->val==array->val){
+                        std::string operation = "GET ";
+                        operation.push_back(static_cast<char>(ASCII_LOWER_A+i));
+                        translated.push_back(operation);
+                        wasAvaible=true;
+                        break;
+                    }
+                }
+            }
+            if(!wasAvaible){
+                translated.push_back("BUILD a "+ array->address);
+            }
+            translated.push_back("ADD e");
+            translated.push_back("PUT e");
+            std::string operation = "GET ";
+            operation.push_back(static_cast<char>(ASCII_LOWER_A+num));
+            translated.push_back(operation);
+            translated.push_back("STORE e");
+
+        }else if(dynamic_cast<Identifier*>(stored)){
         //build address in e, store
+            std::string operation = "GET ";
+            operation.push_back(static_cast<char>(ASCII_LOWER_A+num));
+            translated.push_back(operation);
+            translated.push_back("BUILD e "+std::to_string(program->main->symbolTable[regs[num].stored->val]->adress));
+            translated.push_back("STORE e");
+        }   
     }
+    regs[num].indexStored = "";
+    regs[num].locked=false;
+    if(regs[num].wasNew){
+        delete(regs[num].stored);
+    }
+    regs[num].stored = nullptr;
+    regs[num].wasNew=false;
+    regs[num].changed = false;
 }
 
 int LowLevelProgram::putVal(Value* val, std::vector<std::string>& translated){
-    //look where to put, set changed to true
+    if(dynamic_cast<Number*>(val)){
+        for(int i=0; i<6;i++){
+            if(regs[i].stored!=nullptr){
+                if(regs[i].stored->val==val->val){
+                    return i;
+                }
+            }
+        }
+        for(int i=1; i<6;i++){
+            if(regs[i].stored==nullptr){
+                std::string operation = "PUT ";
+                operation.push_back(static_cast<char>(ASCII_LOWER_A+i));
+                translated.push_back(operation);
+                regs[i].stored = val;
+                return i;
+            }
+        }
+        for(int i=1; i<6;i++){
+            if(!regs[i].locked){
+                translated.push_back("PUT f");
+                freeRegister(i, translated);
+                translated.push_back("GET f");
+                std::string operation = "PUT ";
+                operation.push_back(static_cast<char>(ASCII_LOWER_A+i));
+                translated.push_back(operation);
+                regs[i].stored = val;
+                return i;
+            }
+        }
+    }else if(dynamic_cast<IndentifierArrPid*>(val)){
+        IndentifierArrPid* array = dynamic_cast<IndentifierArrPid*>(val);
+        for(int i=0; i<6;i++){
+            if(regs[i].stored!=nullptr){
+                if(regs[i].stored->val==val->val&&regs[i].indexStored==array->address){
+                    std::string operation = "PUT ";
+                    operation.push_back(static_cast<char>(ASCII_LOWER_A+i));
+                    translated.push_back(operation);
+                    regs[i].changed=true;
+                    return i;
+                }
+            }
+        }
+        for(int i=1; i<6;i++){
+            if(regs[i].stored==nullptr){
+                std::string operation = "PUT ";
+                operation.push_back(static_cast<char>(ASCII_LOWER_A+i));
+                translated.push_back(operation);
+                regs[i].stored = val;
+                regs[i].indexStored=array->address;
+                regs[i].changed=true;
+                return i;
+            }
+        }
+        for(int i=1; i<6;i++){
+            if(!regs[i].locked){
+                translated.push_back("PUT f");
+                freeRegister(i, translated);
+                translated.push_back("GET f");
+                std::string operation = "PUT ";
+                operation.push_back(static_cast<char>(ASCII_LOWER_A+i));
+                translated.push_back(operation);
+                regs[i].stored = val;
+                regs[i].indexStored=array->address;
+                regs[i].changed=true;
+                return i;
+            }
+        }
+       
+    }else if(dynamic_cast<IndentifierArrNumber*>(val)){
+        IndentifierArrNumber* array = dynamic_cast<IndentifierArrNumber*>(val);
+        for(int i=0; i<6;i++){
+            if(regs[i].stored!=nullptr){
+                if(regs[i].stored->val==val->val&&regs[i].indexStored==array->address){
+                    std::string operation = "PUT ";
+                    operation.push_back(static_cast<char>(ASCII_LOWER_A+i));
+                    translated.push_back(operation);
+                    regs[i].changed=true;
+                    return i;
+                }
+            }
+        }
+        for(int i=1; i<6;i++){
+            if(regs[i].stored==nullptr){
+                std::string operation = "PUT ";
+                operation.push_back(static_cast<char>(ASCII_LOWER_A+i));
+                translated.push_back(operation);
+                regs[i].stored = val;
+                regs[i].indexStored=array->address;
+                regs[i].changed=true;
+                return i;
+            }
+        }
+        for(int i=1; i<6;i++){
+            if(!regs[i].locked){
+                translated.push_back("PUT f");
+                freeRegister(i, translated);
+                translated.push_back("GET f");
+                std::string operation = "PUT ";
+                operation.push_back(static_cast<char>(ASCII_LOWER_A+i));
+                translated.push_back(operation);
+                regs[i].stored = val;
+                regs[i].indexStored=array->address;
+                regs[i].changed=true;
+                return i;
+            }
+        }
+    }else if(dynamic_cast<Identifier*>(val)){
+        for(int i=0; i<6;i++){
+            if(regs[i].stored!=nullptr){
+                if(regs[i].stored->val==val->val){
+                    std::string operation = "PUT ";
+                    operation.push_back(static_cast<char>(ASCII_LOWER_A+i));
+                    translated.push_back(operation);
+                    regs[i].changed=true;
+                    return i;
+                }
+            }
+        }
+        for(int i=1; i<6;i++){
+            if(regs[i].stored==nullptr){
+                std::string operation = "PUT ";
+                operation.push_back(static_cast<char>(ASCII_LOWER_A+i));
+                translated.push_back(operation);
+                regs[i].stored = val;
+                regs[i].changed=true;
+                return i;
+            }
+        }
+        for(int i=1; i<6;i++){
+            if(!regs[i].locked){
+                translated.push_back("PUT f");
+                freeRegister(i, translated);
+                translated.push_back("GET f");
+                std::string operation = "PUT ";
+                operation.push_back(static_cast<char>(ASCII_LOWER_A+i));
+                translated.push_back(operation);
+                regs[i].stored = val;
+                regs[i].changed=true;
+                return i;
+            }
+        }
+    }
 }
 
 void LowLevelProgram::getValIntoA(Value* val, std::vector<std::string>& translated){
-    //do what has to be done
+    if(dynamic_cast<Number*>(val)){
+        for(int i=1; i<6;i++){
+            if(regs[i].stored!=nullptr){
+                if(val->val==regs[i].stored->val){
+                    std::string operation = "GET ";
+                    operation.push_back(static_cast<char>(ASCII_LOWER_A+i));
+                    translated.push_back(operation);
+                    return;
+                }
+            }
+        }
+        translated.push_back("BUILD a "+val->val);
+        return;
+    }else if(dynamic_cast<IndentifierArrPid*>(val)){
+        IndentifierArrPid* array = dynamic_cast<IndentifierArrPid*>(val);
+        for(int i=1; i<6;i++){
+            if(regs[i].stored!=nullptr){
+                if(val->val==regs[i].stored->val&&array->address==regs[i].indexStored){
+                    std::string operation = "GET ";
+                    operation.push_back(static_cast<char>(ASCII_LOWER_A+i));
+                    translated.push_back(operation);
+                    return;
+                }
+            }
+        }
+
+        int addressRegister = getValFromString(array->address, translated);
+        //regs[addressRegister].locked = true;
+        translated.push_back("BUILD a "+std::to_string(program->main->symbolTable[array->val]->adress));
+        std::string operation = "ADD ";
+        operation.push_back(static_cast<char>(ASCII_LOWER_A+addressRegister));
+        translated.push_back(operation);
+        translated.push_back("LOAD a");
+        return;
+        
+    }else if(dynamic_cast<IndentifierArrNumber*>(val)){
+        IndentifierArrNumber* array = dynamic_cast<IndentifierArrNumber*>(val);
+        for(int i=1; i<6;i++){
+            if(regs[i].stored!=nullptr){
+                if(val->val==regs[i].stored->val&&array->address==regs[i].indexStored){
+                    std::string operation = "GET ";
+                    operation.push_back(static_cast<char>(ASCII_LOWER_A+i));
+                    translated.push_back(operation);
+                    return;
+                }
+            }
+        }
+
+        int addressRegister = getValFromNumber(stoull(array->address), translated);
+        //regs[addressRegister].locked = true;
+        translated.push_back("BUILD a "+std::to_string(program->main->symbolTable[array->val]->adress));
+        std::string operation = "ADD ";
+        operation.push_back(static_cast<char>(ASCII_LOWER_A+addressRegister));
+        translated.push_back(operation);
+        translated.push_back("LOAD a");
+        return;
+
+    }else if(dynamic_cast<Identifier*>(val)){
+        for(int i=1; i<6;i++){
+            if(regs[i].stored!=nullptr){
+                if(val->val==regs[i].stored->val){
+                    std::string operation = "GET ";
+                    operation.push_back(static_cast<char>(ASCII_LOWER_A+i));
+                    translated.push_back(operation);
+                    return;
+                }
+            }
+        }
+        translated.push_back("BUILD a "+std::to_string(program->main->symbolTable[val->val]->adress));
+        translated.push_back("LOAD a");
+        return;
+    }
+}
+
+void LowLevelProgram::add(int reg, std::vector<std::string>& translated){
+    std::string operation = "ADD ";
+    operation.push_back(static_cast<char>(ASCII_LOWER_A+reg));
+    translated.push_back(operation);
+}
+
+void LowLevelProgram::sub(int reg, std::vector<std::string>& translated){
+    std::string operation = "SUB ";
+    operation.push_back(static_cast<char>(ASCII_LOWER_A+reg));
+    translated.push_back(operation);
+}
+
+void LowLevelProgram::mult(int reg, std::vector<std::string>& translated){
+    std::string operation = "MULT ";
+    operation.push_back(static_cast<char>(ASCII_LOWER_A+reg));
+    translated.push_back(operation);
+}
+
+void LowLevelProgram::div(int reg, std::vector<std::string>& translated){
+    std::string operation = "DIV ";
+    operation.push_back(static_cast<char>(ASCII_LOWER_A+reg));
+    translated.push_back(operation);
+}
+
+void LowLevelProgram::mod(int reg, std::vector<std::string>& translated){
+    std::string operation = "MOD ";
+    operation.push_back(static_cast<char>(ASCII_LOWER_A+reg));
+    translated.push_back(operation);
 }
