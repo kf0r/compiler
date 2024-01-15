@@ -2,6 +2,7 @@
 #define LOW_H
 #include <vector>
 #include <string>
+#include <stack>
 #include "./Block.hpp"
 #include "./Architecture.hpp"
 #include "./Vertex.hpp"
@@ -46,11 +47,16 @@ public:
     std::vector<std::string> lowInstructions;
     int index; 
     LowLevelBlock* next;
+    bool visited = false;
+
+    virtual void print();
 }; 
 
 class LowConditional: public LowLevelBlock{
 public:
     LowLevelBlock* elseNext;
+
+    //void print();
 };
 
 class LowLevelProgram{
@@ -58,12 +64,20 @@ public:
     Register regs[8];
     Program* program;
     LowLevelBlock* initial;
+    LowLevelBlock* halter;
+
     bool isOverflow;
 
     LowLevelProgram(Program* wholeProgram);
 
-    std::string generateAsm();
     LowLevelBlock* translateBlock(Block* block);
+
+    LowLevelBlock* DFS(Block* block);
+
+    
+
+    void printLowLevel();
+
     void handleAssignment(Assignment* assign, std::vector<std::string>& translated);
     void handleWrite(Write* write, std::vector<std::string>& translated);
     void handleRead(Read* read, std::vector<std::string>& translated);

@@ -1,6 +1,16 @@
 #include "./LowLevel.hpp"
 
 
+void LowLevelBlock::print(){
+    std::cout<<"B"+std::to_string(this->index)<<std::endl;
+    for(int i=0;i<lowInstructions.size(); i++){
+        std::cout<<lowInstructions[i]<<std::endl;
+    }
+}
+// void LowConditional::print(){
+//     std::cout<<"CONDITIONAL BLOCK";
+// }
+
 ///////////////////////////////////////////////
 //LOW LEVEL PROGRAM
 ///////////////////////////////////////////////
@@ -55,10 +65,70 @@ LowLevelProgram::LowLevelProgram(Program* whole){
         }
 
     }
+    LowLevelBlock* block = new LowLevelBlock();
+    std::vector<std::string> halt;
+    halt.push_back("HALT");
+    block->lowInstructions = halt;
+    halter = block;
+    halter->index = -1;
+    initial = DFS(program->BBs->initialBlock);
+}
+
+LowLevelBlock* LowLevelProgram::DFS(Block* bloc){
+    LowLevelBlock* lowBlock = translateBlock(bloc);
+    lowBlock->index = bloc->index;
+    if(dynamic_cast<LowConditional*> (lowBlock)){
+        LowConditional* condBlock = dynamic_cast<LowConditional*> (lowBlock);
+        if(bloc->ifFalse==nullptr){
+            condBlock->elseNext = halter;
+        }else{
+            condBlock->elseNext = DFS(bloc->ifFalse);
+        }
+        if(bloc->ifTrue==nullptr){
+            condBlock->next = halter;
+        }else{
+            condBlock->next = DFS(bloc->ifTrue);
+        }
+        return condBlock;
+    }else{
+        if(bloc->ifTrue==nullptr){
+            lowBlock->next = halter;
+        }else{
+            lowBlock->next = DFS(bloc->ifTrue);
+        }
+        return lowBlock;
+    }
+}
+
+void LowLevelProgram::printLowLevel(){
+    std::stack<LowLevelBlock*> stack;
+    stack.push(initial);
+    while(!stack.empty()){
+        LowLevelBlock* top = stack.top();
+        stack.pop();
+        if(!top->visited){
+            if(dynamic_cast<LowConditional*> (top)){
+                LowConditional* cond  = dynamic_cast<LowConditional*> (top);
+                cond->print();
+                std::cout<<"TRUE JUMP "+std::to_string(cond->next->index)<<std::endl;
+                std::cout<<"FALSE JUMP "+std::to_string(cond->elseNext->index)+"\n\n";
+                stack.push(cond->next);
+                stack.push(cond->elseNext);
+            }else{
+                top->print();
+                if(top!=halter){
+                    std::cout<<"JUMP "+std::to_string(top->next->index)+"\n\n";
+                    stack.push(top->next);
+                }
+            }
+            top->visited=true;
+        }
+    }
 }
 
 LowLevelBlock* LowLevelProgram::translateBlock(Block* block){
     std::vector<std::string> translated;
+    bool isConditional = false;
     for(int i=0; i<block->inst.size(); i++){
         Instruction* curr = block->inst[i];
         if(dynamic_cast<Assignment*>(curr)){
@@ -70,9 +140,18 @@ LowLevelBlock* LowLevelProgram::translateBlock(Block* block){
         }else if(dynamic_cast<ConditionalSimple*>(curr)){
             handleCond(dynamic_cast<ConditionalSimple*>(curr)->cond, translated);
         }else if(dynamic_cast<Procedure_call*>(curr)){
+            isConditional = true;
             handleCall(dynamic_cast<Procedure_call*>(curr), translated);
         }
     }
+    if(isConditional){
+        LowConditional* lowBlock = new LowConditional();
+        lowBlock->lowInstructions = translated;
+        return lowBlock;
+    }
+    LowLevelBlock* lowBlock = new LowLevelBlock();
+    lowBlock->lowInstructions = translated;
+    return lowBlock;
 }
 
 void LowLevelProgram::handleAssignment(Assignment* assign, std::vector<std::string>& translated){
