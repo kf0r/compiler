@@ -4,11 +4,10 @@
 #include <string>
 #include <stack>
 #include "./Block.hpp"
-#include "./Architecture.hpp"
 #include "./Vertex.hpp"
 #include "./ProgramStructure.hpp"
 
-unsigned long long MAX_MEM_SIZE = 4611686018427388000;
+
 const int ASCII_LOWER_A = 97;
 
 ////////

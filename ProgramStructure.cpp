@@ -335,6 +335,7 @@ bool Program::semantic(){
             }
         }
     }
+    return success;
 }
 
 void Program::generateBB(){

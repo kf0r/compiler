@@ -45,11 +45,12 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 17 "parser.ypp"
+#line 18 "parser.ypp"
 
     #include "./Vertex.hpp"
     #include "./Types.hpp"
     #include "ProgramStructure.hpp"
+    #include "./LowLevel.hpp"
     typedef struct Parser_token
     {
         uint64_t val;
@@ -57,7 +58,7 @@ extern int yydebug;
         std::string* str; 
     } Parser_token;
 
-#line 61 "parser.tab.hpp"
+#line 62 "parser.tab.hpp"
 
 /* Token kinds.  */
 #ifndef YYTOKENTYPE
@@ -115,7 +116,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 29 "parser.ypp"
+#line 31 "parser.ypp"
 
     int intVal;
 
@@ -143,7 +144,7 @@ union YYSTYPE
 
     Program* programPointer;
 
-#line 147 "parser.tab.hpp"
+#line 148 "parser.tab.hpp"
 
 };
 typedef union YYSTYPE YYSTYPE;

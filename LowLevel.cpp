@@ -1,5 +1,6 @@
 #include "./LowLevel.hpp"
 
+unsigned long long MAX_SIZE = 4611686018427388000;
 
 void LowLevelBlock::print(){
     std::cout<<"B"+std::to_string(this->index)<<std::endl;
@@ -30,7 +31,7 @@ LowLevelProgram::LowLevelProgram(Program* whole){
     program = whole;
     
     for(auto pair : program->main->symbolTable){
-        if(memAddr>MAX_MEM_SIZE||memAddr<0){
+        if(memAddr>MAX_SIZE||memAddr<0){
             isOverflow=true;
         }
         pair.second->adress = memAddr;
@@ -41,7 +42,9 @@ LowLevelProgram::LowLevelProgram(Program* whole){
         program->procedures->procedures[i]->initialAddr = memAddr;
 
         for(i=0; i<program->procedures->procedures[i]->head->args->argsVec.size();i++){
-            if(memAddr>MAX_MEM_SIZE||memAddr<0){
+//                                                            ^
+//                                                            | here it fucks up
+            if(memAddr>MAX_SIZE||memAddr<0){
                 isOverflow=true;
             }
             Identifier* callable =program->procedures->procedures[i]->head->args->argsVec[i];
@@ -50,13 +53,13 @@ LowLevelProgram::LowLevelProgram(Program* whole){
             memAddr++;
             memAddr+=var->offset;
         }
-        if(memAddr>MAX_MEM_SIZE||memAddr<0){
+        if(memAddr>MAX_SIZE||memAddr<0){
             isOverflow=true;
         }
         program->procedures->procedures[i]->retAddr = memAddr;
         memAddr++;
         for(auto pair : program->procedures->procedures[i]->symbolTable){
-            if(memAddr>MAX_MEM_SIZE||memAddr<0){
+            if(memAddr>MAX_SIZE||memAddr<0){
                 isOverflow=true;
             }
             pair.second->adress = memAddr;
