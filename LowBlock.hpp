@@ -73,7 +73,6 @@ public:
     Architecture();
     void dumpAll();
     void dumpUnlocked();
-    ////////////////
 
     int getVal(Value* val);
     void getInto(int i,Value* val);
@@ -88,7 +87,6 @@ public:
     int putValAnywhere(Value* val);
 
     int getBestFree();
-    void store(int index);
 };
 
 class LowLevelProgram{
@@ -97,6 +95,9 @@ public:
     LowLevelBlock* mainBlock;
     std::map<std::string, LowLevelBlock*> proceduresBlock;
     Program* program;
+    unsigned long long addr;
+    unsigned long long prevAddr;
+
 
     LowLevelProgram(Program* whole);
     void translateMain();

@@ -18,8 +18,15 @@ public:
     bool validateCallMain(Procedure_call* call);
     bool validateCallProc(Procedure_call* call, Procedure* current);
     bool semantic();
+    bool memoryManagement();
+    bool checkInitialisations();
+    bool checkUsage();
+    bool setAdresses();
+    bool compareOffsets(const Variable* a, const Variable* b);
+    bool checkOverflow(unsigned long long prevAddr, unsigned long long newAddr);
     void generateBB();
     void printBBs();
+
 };
 
 #endif

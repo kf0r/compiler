@@ -114,7 +114,24 @@ void Architecture::getIntoA(Value* val){
 }
 
 bool Architecture::isSameVal(Value* first, Value* second){
-
+    if((first==nullptr)!=(second==nullptr)){
+        return false;
+    }
+    if(first->isArray()&&second->isArray()){
+        if(dynamic_cast<IndentifierArrPid*>(first)&&dynamic_cast<IndentifierArrPid*>(second)){
+            IndentifierArrPid* firstArr = dynamic_cast<IndentifierArrPid*>(first);
+            IndentifierArrPid* secArr = dynamic_cast<IndentifierArrPid*>(second);
+            return firstArr->val==secArr->val&&firstArr->address==secArr->address;
+        }else if(dynamic_cast<IndentifierArrNumber*>(first)&&dynamic_cast<IndentifierArrNumber*>(second)){
+            IndentifierArrNumber* firstArr = dynamic_cast<IndentifierArrNumber*>(first);
+            IndentifierArrNumber* secArr = dynamic_cast<IndentifierArrNumber*>(second);
+            return firstArr->val==secArr->val&&firstArr->address==secArr->address;
+        }
+        return false;
+    }else if(!first->isArray()&&!second->isArray()){
+        return first->val==second->val;
+    }
+    return false;
 }
 
 void Architecture::buildNum(unsigned long long number, int where){
@@ -130,6 +147,14 @@ void Architecture::prepareToLoad(Value* val){
 }
 
 void store(int index){
-    
+
 }
 
+////////////////////////////////////////////////////////////////
+//
+//LowLevelProgram
+////////////////////////////////////////////////////////////////
+
+LowLevelProgram::LowLevelProgram(Program* whole){
+    program = whole;
+}
