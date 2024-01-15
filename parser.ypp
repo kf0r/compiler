@@ -172,9 +172,7 @@ program_all: procedures main {
                     program->main = $2;
                     program->procedures = $1;
                     $$=program;
-                    std::cout<<program->procedures->procedures[0]->head->name;
                     if(program->semantic()){
-                        std::cout<<program->procedures->procedures[0]->head->args->argsVec[0]->val;
                         program->generateBB();
                         program->printBBs();
                         
