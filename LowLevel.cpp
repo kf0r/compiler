@@ -17,6 +17,7 @@ void LowLevelBlock::print(){
 ///////////////////////////////////////////////
 
 //yep can be broken down to subprocedures but not now. Im in hurry, copy paste is faster.
+//TODO-> implement procedures translation and management
 LowLevelProgram::LowLevelProgram(Program* whole){
     for (int i=0; i<8; i++){
         regs[i].number = i;
@@ -26,11 +27,9 @@ LowLevelProgram::LowLevelProgram(Program* whole){
         regs[i].stored=nullptr;
         regs[i].indexStored ="";
     }
-
     int memAddr=0;
     program = whole;
-    
-    for(auto pair : program->main->symbolTable){
+    for(auto pair : whole->main->symbolTable){
         if(memAddr>MAX_SIZE||memAddr<0){
             isOverflow=true;
         }
@@ -38,36 +37,7 @@ LowLevelProgram::LowLevelProgram(Program* whole){
         memAddr++;
         memAddr+=pair.second->offset;
     }
-    for(int i=0; i<program->procedures->procedures.size();i++){
-        program->procedures->procedures[i]->initialAddr = memAddr;
 
-        for(i=0; i<program->procedures->procedures[i]->head->args->argsVec.size();i++){
-//                                                            ^
-//                                                            | here it fucks up
-            if(memAddr>MAX_SIZE||memAddr<0){
-                isOverflow=true;
-            }
-            Identifier* callable =program->procedures->procedures[i]->head->args->argsVec[i];
-            Variable* var = program->procedures->procedures[i]->callableTable[callable->val];
-            var->adress = memAddr;
-            memAddr++;
-            memAddr+=var->offset;
-        }
-        if(memAddr>MAX_SIZE||memAddr<0){
-            isOverflow=true;
-        }
-        program->procedures->procedures[i]->retAddr = memAddr;
-        memAddr++;
-        for(auto pair : program->procedures->procedures[i]->symbolTable){
-            if(memAddr>MAX_SIZE||memAddr<0){
-                isOverflow=true;
-            }
-            pair.second->adress = memAddr;
-            memAddr++;
-            memAddr+=pair.second->offset;
-        }
-
-    }
     LowLevelBlock* block = new LowLevelBlock();
     std::vector<std::string> halt;
     halt.push_back("HALT");
@@ -132,6 +102,7 @@ void LowLevelProgram::printLowLevel(){
 LowLevelBlock* LowLevelProgram::translateBlock(Block* block){
     std::vector<std::string> translated;
     bool isConditional = false;
+    dumpRegs(translated);
     for(int i=0; i<block->inst.size(); i++){
         Instruction* curr = block->inst[i];
         if(dynamic_cast<Assignment*>(curr)){
