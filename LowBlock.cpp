@@ -11,14 +11,12 @@ Register::Register(int i){
     name.push_back(static_cast<char>(ASCII_LOWER_A+i));
     changed = false;
     locked = false;
-    array = false;
     stored = nullptr;
 }
 
 void Register::freeRegister(){
     changed = false;
     locked = false;
-    array = false;
     stored = nullptr;
 }
 
@@ -26,8 +24,8 @@ void Register::freeRegister(){
 //
 //Architecture
 ////////////////////////////////////////////////////////////////
-Architecture::Architecture():regs{{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}}{
-    currentPart="";
+Architecture::Architecture(Program_part* part):regs{{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}}{
+    programPart = part;
     for(int i=0;i<8;i++){
         regs[i] = Register(i);
     }
@@ -81,6 +79,7 @@ int Architecture::getVal(Value* val){
     }
     int bestIndex = getBestFree();
     getIntoA(val);
+
     //PUT bestIndex
     ////////////////////////////////////////////////
 }
@@ -96,6 +95,7 @@ void Architecture::getInto(int i, Value* val){
         regs[i].freeRegister();
     }
     getIntoA(val);
+
     //PUT i
     ///////////////////////////////////////////////
 }
@@ -108,7 +108,7 @@ void Architecture::getIntoA(Value* val){
             return;
         }
     }
-    prepareToLoad(val);
+    buildAddress(val,0);
     //LOAD a
     return;
 }
@@ -135,19 +135,143 @@ bool Architecture::isSameVal(Value* first, Value* second){
 }
 
 void Architecture::buildNum(unsigned long long number, int where){
-
+    Builder* builder = new Builder();
+    builder->numberBuild = number;
+    builder->target = where;
 }
 
-int Architecture::putValAnywhere(Value* val){
-
+int Architecture::putModifiedVal(Value* val){
+    for(int i=1; i<6;i++){
+        if(isSameVal(regs[i].stored, val)){
+            regs[i].changed=true;
+            //put(i);
+            return i;
+        }
+    }
+    int best = getBestFree();
+    regs[best].changed=true;
+    regs[best].stored = val;
+    //put(best);
+    return best;
 }
 
-void Architecture::prepareToLoad(Value* val){
+void Architecture::buildAddress(Value* val, int where){
+    if(dynamic_cast<IndentifierArrNumber*>(val)){
+        if(isCallable(val)){
+            IndentifierArrNumber* array = dynamic_cast<IndentifierArrNumber*>(val);
+            Procedure* proc = dynamic_cast<Procedure*>(programPart);
+            buildNum(proc->callableTable[array->val]->adress, 0);
+            //load(a)
+            //load(a)
+            //put(e)
+            Number* number = new Number();
+            garbageCollector.push_back(number);
+            number->val = array->address;
+            getIntoA(number);
+            //add(e)
+            if(where!=0){
+                //put(where)
+            }
 
+            ////////////////////////////////////////
+            //build addres in a, load twice, put e
+            //get index into a
+            //add
+        }else{
+            IndentifierArrNumber* array = dynamic_cast<IndentifierArrNumber*>(val);
+            buildNum(programPart->symbolTable[array->val]->adress, 0);
+            //load(a)
+            //put(e)
+            Number* number = new Number();
+            garbageCollector.push_back(number);
+            number->val = array->address;
+            getIntoA(number);
+            //add(e)
+            if(where!=0){
+                //put(where)
+            }
+
+            ////////////////////////////////////////
+            //build addres in a, load once, put e
+            //get index into a
+            //add
+
+        }
+    }else if(dynamic_cast<IndentifierArrPid*>(val)){
+        if(isCallable(val)){
+            Procedure* proc = dynamic_cast<Procedure*>(programPart);
+            IndentifierArrPid* array = dynamic_cast<IndentifierArrPid*>(val);
+            buildNum(proc->callableTable[array->val]->adress, 0);
+            //load(a)
+            //load(a)
+            //put(e)
+            Identifier* id = new Identifier();
+            garbageCollector.push_back(id);
+            id->val = array->address;
+            getIntoA(id);
+            //add(e)
+            if(where!=0){
+                //put(where)
+            }
+
+            ////////////////////////////////////////
+            //build addres in a, load twice, put e
+            //get index into a
+            //add
+            //load a
+        }else{
+            IndentifierArrPid* array = dynamic_cast<IndentifierArrPid*>(val);
+            buildNum(programPart->symbolTable[array->val]->adress, 0);
+            //load(a)
+            //put(e)
+            Identifier* id = new Identifier();
+            garbageCollector.push_back(id);
+            id->val = array->address;
+            getIntoA(id);
+            //add(e)
+            if(where!=0){
+                //put(where)
+            }
+
+            ////////////////////////////////////////
+            //build addres in a, load once, put e
+            //get index into a
+            //add
+            //load a
+        }
+    }else if(dynamic_cast<Identifier*>(val)){
+        if(isCallable(val)){
+            Procedure* proc = dynamic_cast<Procedure*>(programPart);
+            buildNum(proc->callableTable[val->val]->adress, 0);
+            //load a
+            if(where!=0){
+                //put(where)
+            }
+
+            ////////////////////////////////////////
+            //build addres in a, load 
+        }else{
+            buildNum(programPart->symbolTable[val->val]->adress, where);
+
+            ////////////////////////////////////////
+            //build addres in a
+        }
+    }else if(dynamic_cast<Number*>(val)){
+        buildNum(std::stoull(val->val), where);
+    }
 }
 
-void store(int index){
-
+bool Architecture::isCallable(Value* val){
+    if(dynamic_cast<Main*>(programPart)){
+        //we are in main, variables aren't callable
+        return false;
+    }else{
+        Procedure* procedure = dynamic_cast<Procedure*>(programPart);
+        if(procedure->callableTable[val->val]){
+            return true;
+        }
+        return false;
+    }
 }
 
 ////////////////////////////////////////////////////////////////
@@ -157,4 +281,5 @@ void store(int index){
 
 LowLevelProgram::LowLevelProgram(Program* whole){
     program = whole;
+    Architecture* arch = new Architecture(whole->main);
 }

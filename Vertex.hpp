@@ -104,10 +104,12 @@ public:
     std::map<std::string, Variable*> symbolTable;
     Declaration* decs;
     LinkedCommands* comms;
+
+    virtual void toString();
 };
 
 class Main: public Program_part{
-
+    void toString();
 };
 
 class Procedure: public Program_part{
@@ -117,6 +119,7 @@ public:
     Procedure_head* head;
     unsigned long long initialAddr;
     unsigned long long retAddr;
+    void toString();
     //LinkedCommands* comms;
     //Declaration* decs;
 };

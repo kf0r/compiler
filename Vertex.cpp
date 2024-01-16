@@ -205,3 +205,15 @@ bool ProceduresAll::addProc(Procedure* proc){
     ProceduresAll::procedures.push_back(proc);
     return true;
 }
+
+void Program_part::toString(){
+    std::cout<<"PROGRAM PART"<<std::endl;
+}
+
+void Main::toString(){
+    std::cout<<"MAIN"<<std::endl;
+}
+
+void Procedure::toString(){
+    std::cout<<"PROCEDURE "+head->name<<std::endl;
+}
