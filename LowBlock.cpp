@@ -31,6 +31,47 @@ Architecture::Architecture(Program_part* part):regs{{0}, {1}, {2}, {3}, {4}, {5}
     }
 }
 
+void Architecture::storeAll(){
+    for(int i=1; i<6;i++){
+        if(regs[i].changed){
+            buildAddress(regs[i].stored, H);
+            get(i);
+            store(H);
+            regs[i].changed=false;
+        }
+    }
+}
+
+void Architecture::storeReturn(){
+    Procedure* proc = dynamic_cast<Procedure*>(programPart);
+    for(int i=1;i<6;i++){
+        Value* stored= regs[i].stored;
+        if(proc->callableTable[stored->val]){
+            if(regs[i].changed){
+                buildAddress(regs[i].stored, H);
+                get(i);
+                store(H);
+                regs[i].changed=false;
+            }
+        }
+    }
+}
+
+void Architecture::clearAll(){
+    for(int i=1;i<6;i++){
+        if(regs[i].changed){
+            std::cout<<"\033[31;1;4mFAULT\033[0m CLEARING REGISTER WITH CHANGED VALUES\n";
+        }
+        if(regs[i].locked){
+            std::cout<<"\033[31;1;4mFAULT\033[0m CLEARING LOCKED REGISTER\n";
+        }
+        regs[i].freeRegister();
+    }
+    for(int i=0; i<garbageCollector.size();i++){
+        delete(garbageCollector[i]);
+    }
+}
+
 void Architecture::dumpAll(){
     for(int i=0;i<8;i++){
         if(regs[i].changed){
@@ -50,11 +91,34 @@ void Architecture::dumpUnlocked(){
     for(int i=0;i<8;i++){
         if(!regs[i].locked){
             if(regs[i].changed){
-                buildAddress(regs[i].stored, 7);
+                buildAddress(regs[i].stored, H);
                 get(i);
                 store(H);
             }
             regs[i].freeRegister();
+        }
+    }
+}
+
+void Architecture::storePrecheck(Identifier* id){
+    for(int i=1; i<6;i++){
+        if(dynamic_cast<IndentifierArrPid*>(regs[i].stored)){
+            IndentifierArrPid* array = dynamic_cast<IndentifierArrPid*>(regs[i].stored);
+            if(id->val==array->val&&regs[i].changed){
+                buildAddress(regs[i].stored, H);
+                get(i);
+                store(H);
+            }
+        }
+    }
+}
+void Architecture::storePostcheck(Identifier* id){
+    for(int i=1; i<6;i++){
+        if(dynamic_cast<IndentifierArrPid*>(regs[i].stored)){
+            IndentifierArrPid* array = dynamic_cast<IndentifierArrPid*>(regs[i].stored);
+            if(id->val==array->val){
+                regs[i].freeRegister();
+            }
         }
     }
 }
@@ -67,6 +131,7 @@ int Architecture::getBestFree(){
     }
     for(int i=1;i<6;i++){
         if(!regs[i].locked&&!regs[i].changed){
+            regs[i].freeRegister();
             return i;
         }
     }
@@ -78,7 +143,7 @@ int Architecture::getBestFree(){
             return i;
         }
     }
-    std::cout<<"\033[31;1;4mFAULT\033[0m ALL REGISTERS LOCKED";
+    std::cout<<"\033[31;1;4mFAULT\033[0m ALL REGISTERS LOCKED\n";
     return -1;
 }
 
@@ -285,6 +350,8 @@ bool Architecture::isCallable(Value* val){
     }
 }
 
+
+
 ////////////////////////////////////////////////////////////////
 //
 //LowLevelProgram
@@ -306,14 +373,12 @@ void LowLevelProgram::handleAssign(Assignment* assing){
             int right = arch->getVal(comp->right);
             arch->regs[right].locked=true;
             arch->getIntoA(comp->left);
-
+            arch->regs[right].locked=false;
             if(comp->operand=="+"){
                 arch->add(right);
             }else if(comp->operand=="-"){
                 arch->sub(right);
             }
-
-            arch->regs[right].locked=false;
 
         }else if(comp->operand=="/"||comp->operand=="%"||comp->operand=="*"){
 

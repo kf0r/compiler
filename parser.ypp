@@ -7,7 +7,7 @@
     #include "./Types.hpp"
     #include "parser.tab.hpp"
     #include "ProgramStructure.hpp"
-    #include "./LowLevel.hpp"
+    #include "./LowBlock.hpp"
     extern int yylex();
     extern int yyparse();
     int yyerror(std::string s);
@@ -19,7 +19,7 @@
     #include "./Vertex.hpp"
     #include "./Types.hpp"
     #include "ProgramStructure.hpp"
-    #include "./LowLevel.hpp"
+    #include "./LowBlocks.hpp"
     typedef struct Parser_token
     {
         uint64_t val;
@@ -175,7 +175,7 @@ program_all: procedures main {
                     if(program->semantic()){
                         program->generateBB();
                         program->printBBs();
-                        
+                        LowLevelProgram* lowProgram = new LowLevelProgram(program);
                         
                     }else{
                         std::cout<<"Kompilacja zakonczona niepowodzeniem";
