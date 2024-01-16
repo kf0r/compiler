@@ -34,9 +34,15 @@ Architecture::Architecture(Program_part* part):regs{{0}, {1}, {2}, {3}, {4}, {5}
 void Architecture::dumpAll(){
     for(int i=0;i<8;i++){
         if(regs[i].changed){
-            //STORE i
+            buildAddress(regs[i].stored, 7);
+            //get i
+            //store 7
         }
         regs[i].freeRegister();
+    }
+    
+    for(int i=0; i<garbageCollector.size();i++){
+        delete(garbageCollector[i]);
     }
 }
 
@@ -44,7 +50,9 @@ void Architecture::dumpUnlocked(){
     for(int i=0;i<8;i++){
         if(!regs[i].locked){
             if(regs[i].changed){
-                //STORE i
+                buildAddress(regs[i].stored, 7);
+                //get i
+                //store 7
             }
             regs[i].freeRegister();
         }
@@ -64,7 +72,9 @@ int Architecture::getBestFree(){
     }
     for(int i=i;i<6;i++){
         if(!regs[i].locked){
-            //STORE i
+            buildAddress(regs[i].stored, 7);
+            //get i
+            //store 7
             return i;
         }
     }

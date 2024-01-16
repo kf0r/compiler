@@ -87,26 +87,36 @@ public:
     Register regs[8];
 
     Architecture(Program_part* part);
-
     void dumpAll();
     void dumpUnlocked();
-
     int getVal(Value* val);
     void getInto(int i,Value* val);
     void getIntoA(Value* val);
-
     bool isSameVal(Value* first, Value* second);
-
     bool isCallable(Value* val);
-
     void buildNum(unsigned long long number, int where);
-
     void buildAddress(Value* val, int where);
-
     int putModifiedVal(Value* val);
-
     int getBestFree();
 
+    void add();
+    void sub();
+    void rst();
+    void dec();
+    void inc();
+    void shl();
+    void shr();
+
+    void put();
+    void get();
+    void load();
+    void store();
+    void strk();
+
+    void jump();
+    void jzero();
+    void jpos();
+    void jumpr();
 };
 
 class LowLevelProgram{
@@ -122,6 +132,12 @@ public:
     LowLevelProgram(Program* whole);
     void translateMain();
     void translateProcedure(std::string name);
+
+    void handleAssign();
+    void handleWrite();
+    void handleRead();
+    void handleCond();
+    void handleCall();
 };
 
 

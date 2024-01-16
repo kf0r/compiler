@@ -176,8 +176,7 @@ program_all: procedures main {
                         program->generateBB();
                         program->printBBs();
                         
-                        LowLevelProgram* lowLevel = new LowLevelProgram(program);
-                        lowLevel->printLowLevel();
+                        
                     }else{
                         std::cout<<"Kompilacja zakonczona niepowodzeniem";
                     }
