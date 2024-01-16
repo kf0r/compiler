@@ -8,10 +8,14 @@
 #include "./Vertex.hpp"
 #include "./ProgramStructure.hpp"
 
+enum RegID{
+    A,B,C,D,E,F,G,H
+};
+
 class LowInstruction{
 public:
     std::string inst;
-    int target;
+    int index;
 };
 
 class Builder: public LowInstruction{
@@ -33,8 +37,18 @@ public:
 };
 class Jumper: public LowInstruction{
 public:
-    int rightTarget;
+    LowInstruction* jumpTo;
 };
+
+class JPos: public Jumper{
+public:
+    bool condition;
+};
+class JZero: public Jumper{
+public:
+    bool condition;
+};
+
 class LowLevelBlock{
 public:
     int index;
@@ -89,6 +103,11 @@ public:
     Architecture(Program_part* part);
     void dumpAll();
     void dumpUnlocked();
+
+    void storeAll();
+    void storeReturn();
+    void clearAll();
+
     int getVal(Value* val);
     void getInto(int i,Value* val);
     void getIntoA(Value* val);
@@ -99,24 +118,37 @@ public:
     int putModifiedVal(Value* val);
     int getBestFree();
 
-    void add();
-    void sub();
-    void rst();
-    void dec();
-    void inc();
-    void shl();
-    void shr();
+    void storePrecheck(Identifier* id);
+    void storePostcheck(Identifier* id);
+    void add(int right);
+    void sub(int right);
 
-    void put();
-    void get();
-    void load();
-    void store();
-    void strk();
+    void mult();
+    void div();
+    void mod();
+
+    void read();
+    void write();
+
+    void rst(int reg);
+    void dec(int reg);
+    void inc(int reg);
+    void shl(int reg);
+    void shr(int reg);
+
+    void put(int reg);
+    void get(int reg);
+    void load(int reg);
+    void store(int reg);
+    void strk(int reg);
 
     void jump();
-    void jzero();
-    void jpos();
-    void jumpr();
+    void jumpr(int reg);
+    
+    void jzero(bool cond);
+    void jpos(bool cond);
+
+    void halt();
 };
 
 class LowLevelProgram{
@@ -133,11 +165,16 @@ public:
     void translateMain();
     void translateProcedure(std::string name);
 
-    void handleAssign();
-    void handleWrite();
-    void handleRead();
-    void handleCond();
-    void handleCall();
+    void handleAssign(Assignment* assign);
+    void handleRead(Read* read);
+    void handleWrite(Write* write);
+    void handleCond(Condition* cond);
+    void handleCall(Procedure_call* call);
+
+    //if in main, instrutuon HALT
+    //if in procedure, dump only callable vars, build return addres, load, jump
+    void handleReturn(); 
+
 };
 
 

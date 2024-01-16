@@ -34,13 +34,13 @@ Architecture::Architecture(Program_part* part):regs{{0}, {1}, {2}, {3}, {4}, {5}
 void Architecture::dumpAll(){
     for(int i=0;i<8;i++){
         if(regs[i].changed){
-            buildAddress(regs[i].stored, 7);
-            //get i
-            //store 7
+            buildAddress(regs[i].stored, H);
+            get(i);
+            store(H);
         }
         regs[i].freeRegister();
     }
-    
+
     for(int i=0; i<garbageCollector.size();i++){
         delete(garbageCollector[i]);
     }
@@ -51,8 +51,8 @@ void Architecture::dumpUnlocked(){
         if(!regs[i].locked){
             if(regs[i].changed){
                 buildAddress(regs[i].stored, 7);
-                //get i
-                //store 7
+                get(i);
+                store(H);
             }
             regs[i].freeRegister();
         }
@@ -73,11 +73,12 @@ int Architecture::getBestFree(){
     for(int i=i;i<6;i++){
         if(!regs[i].locked){
             buildAddress(regs[i].stored, 7);
-            //get i
-            //store 7
+            get(i);
+            store(H);
             return i;
         }
     }
+    std::cout<<"\033[31;1;4mFAULT\033[0m ALL REGISTERS LOCKED";
     return -1;
 }
 
@@ -90,8 +91,8 @@ int Architecture::getVal(Value* val){
     int bestIndex = getBestFree();
     getIntoA(val);
 
-    //PUT bestIndex
-    ////////////////////////////////////////////////
+    put(bestIndex);
+    return bestIndex;
 }
 
 void Architecture::getInto(int i, Value* val){
@@ -101,25 +102,25 @@ void Architecture::getInto(int i, Value* val){
     if(!regs[i].changed||regs[i].stored==nullptr){
         regs[i].freeRegister();
     }else{
-        //STORE i
+        buildAddress(regs[i].stored, H);
+        get(i);
+        store(H);
         regs[i].freeRegister();
     }
+    //numbers can be builded directly into i, so can be optimised a bit
     getIntoA(val);
-
-    //PUT i
-    ///////////////////////////////////////////////
+    put(i);
 }
 
 void Architecture::getIntoA(Value* val){
     for(int i=1;i<6;i++){
         if(isSameVal(val, regs[i].stored)){
-            //GET i
-            //////////////////////////////////////
+            get(i);
             return;
         }
     }
     buildAddress(val,0);
-    //LOAD a
+    load(A);
     return;
 }
 
@@ -145,23 +146,23 @@ bool Architecture::isSameVal(Value* first, Value* second){
 }
 
 void Architecture::buildNum(unsigned long long number, int where){
-    Builder* builder = new Builder();
-    builder->numberBuild = number;
-    builder->target = where;
+////////////////////
 }
 
 int Architecture::putModifiedVal(Value* val){
     for(int i=1; i<6;i++){
         if(isSameVal(regs[i].stored, val)){
             regs[i].changed=true;
-            //put(i);
+            put(i);
             return i;
         }
     }
+    put(G);
     int best = getBestFree();
     regs[best].changed=true;
     regs[best].stored = val;
-    //put(best);
+    get(G);
+    put(best);
     return best;
 }
 
@@ -171,16 +172,16 @@ void Architecture::buildAddress(Value* val, int where){
             IndentifierArrNumber* array = dynamic_cast<IndentifierArrNumber*>(val);
             Procedure* proc = dynamic_cast<Procedure*>(programPart);
             buildNum(proc->callableTable[array->val]->adress, 0);
-            //load(a)
-            //load(a)
-            //put(e)
+            load(A);
+            load(A);
+            put(H);
             Number* number = new Number();
             garbageCollector.push_back(number);
             number->val = array->address;
             getIntoA(number);
-            //add(e)
-            if(where!=0){
-                //put(where)
+            add(H);
+            if(where!=A){
+                put(where);
             }
 
             ////////////////////////////////////////
@@ -190,15 +191,15 @@ void Architecture::buildAddress(Value* val, int where){
         }else{
             IndentifierArrNumber* array = dynamic_cast<IndentifierArrNumber*>(val);
             buildNum(programPart->symbolTable[array->val]->adress, 0);
-            //load(a)
-            //put(e)
+            load(A);
+            put(H);
             Number* number = new Number();
             garbageCollector.push_back(number);
             number->val = array->address;
             getIntoA(number);
-            //add(e)
-            if(where!=0){
-                //put(where)
+            add(H);
+            if(where!=A){
+                put(where);
             }
 
             ////////////////////////////////////////
@@ -212,16 +213,16 @@ void Architecture::buildAddress(Value* val, int where){
             Procedure* proc = dynamic_cast<Procedure*>(programPart);
             IndentifierArrPid* array = dynamic_cast<IndentifierArrPid*>(val);
             buildNum(proc->callableTable[array->val]->adress, 0);
-            //load(a)
-            //load(a)
-            //put(e)
+            load(A);
+            load(A);
+            put(H);
             Identifier* id = new Identifier();
             garbageCollector.push_back(id);
             id->val = array->address;
             getIntoA(id);
-            //add(e)
-            if(where!=0){
-                //put(where)
+            add(H);
+            if(where!=A){
+                put(H);
             }
 
             ////////////////////////////////////////
@@ -232,15 +233,15 @@ void Architecture::buildAddress(Value* val, int where){
         }else{
             IndentifierArrPid* array = dynamic_cast<IndentifierArrPid*>(val);
             buildNum(programPart->symbolTable[array->val]->adress, 0);
-            //load(a)
-            //put(e)
+            load(A);
+            put(E);
             Identifier* id = new Identifier();
             garbageCollector.push_back(id);
             id->val = array->address;
             getIntoA(id);
-            //add(e)
-            if(where!=0){
-                //put(where)
+            add(H);
+            if(where!=A){
+                put(where);
             }
 
             ////////////////////////////////////////
@@ -253,9 +254,9 @@ void Architecture::buildAddress(Value* val, int where){
         if(isCallable(val)){
             Procedure* proc = dynamic_cast<Procedure*>(programPart);
             buildNum(proc->callableTable[val->val]->adress, 0);
-            //load a
-            if(where!=0){
-                //put(where)
+            load(A);
+            if(where!=A){
+                put(where);
             }
 
             ////////////////////////////////////////
@@ -292,4 +293,175 @@ bool Architecture::isCallable(Value* val){
 LowLevelProgram::LowLevelProgram(Program* whole){
     program = whole;
     Architecture* arch = new Architecture(whole->main);
+}
+
+//if we assign a=b-c we have to check for x[a] in registers
+void LowLevelProgram::handleAssign(Assignment* assing){
+    Expression* expression = assing->expression;
+    arch->storePrecheck(assing->identifier);
+    if(dynamic_cast<ExprComplex*>(expression)){
+        ExprComplex* comp = dynamic_cast<ExprComplex*>(expression);
+        if(comp->operand=="+"||comp->operand=="-"){
+
+            int right = arch->getVal(comp->right);
+            arch->regs[right].locked=true;
+            arch->getIntoA(comp->left);
+
+            if(comp->operand=="+"){
+                arch->add(right);
+            }else if(comp->operand=="-"){
+                arch->sub(right);
+            }
+
+            arch->regs[right].locked=false;
+
+        }else if(comp->operand=="/"||comp->operand=="%"||comp->operand=="*"){
+
+            arch->getInto(C, comp->right);
+            arch->regs[C].locked = true;
+            arch->getInto(B, comp->left);
+            arch->regs[C].locked = false;
+
+            arch->storeAll();
+            if(comp->operand=="/"){
+                arch->div();
+            }else if(comp->operand=="%"){
+                arch->mod();
+            }else if(comp->operand=="*"){
+                arch->mult();
+            }
+            arch->clearAll();
+        }
+
+        //we left some omptimisation possibiliteis like check if we can multiply by bitshifting etc
+
+    }else{
+        arch->getIntoA(expression->left);
+    }
+    arch->putModifiedVal(assing->identifier);
+    arch->storePostcheck(assing->identifier);
+}
+
+void LowLevelProgram::handleRead(Read* read){
+    arch->storePrecheck(read->ident);
+    arch->read();
+    arch->putModifiedVal(read->ident);
+    arch->storePostcheck(read->ident);
+}
+
+void LowLevelProgram::handleWrite(Write* write){
+    arch->getIntoA(write->val);
+    arch->write();
+}
+
+void LowLevelProgram::handleCond(Condition* cond){
+    //store all changed without dumping
+    arch->storeAll();
+    Value* left = cond->leftVal;
+    Value* right = cond->rightVal;
+    if(cond->operand==">"){
+
+        int rightReg = arch->getVal(right);
+        arch->getIntoA(left);
+        arch->sub(rightReg);
+
+        arch->jpos(true);
+        arch->jzero(false);
+
+    }else if(cond->operand=="<"){
+
+        int leftReg = arch->getVal(left);
+        arch->getIntoA(right);
+        arch->sub(leftReg);
+
+        arch->jpos(true);
+        arch->jzero(false);
+
+    }else if(cond->operand==">="){
+
+        int leftReg = arch->getVal(left);
+        arch->getIntoA(right);
+        arch->sub(leftReg);
+
+        arch->jpos(false);
+        arch->jzero(true);
+
+    }else if(cond->operand=="<="){
+
+        int rightReg = arch->getVal(right);
+        arch->getIntoA(left);
+        arch->sub(rightReg);
+
+        arch->jpos(false);
+        arch->jzero(true);
+
+    }else if(cond->operand=="!="){
+        int rightReg = arch->getVal(right);
+        arch->regs[rightReg].locked = true;
+
+        int leftReg = arch->getVal(left);
+        arch->regs[rightReg].locked = false;
+        arch->get(leftReg);
+        arch->sub(rightReg);
+        arch->jpos(true);
+
+        arch->get(rightReg);
+        arch->sub(leftReg);
+        arch->jpos(true);
+        arch->jzero(false);
+
+    }else if(cond->operand=="=="){
+        int rightReg = arch->getVal(right);
+        arch->regs[rightReg].locked = true;
+
+        int leftReg = arch->getVal(left);
+        arch->regs[rightReg].locked = false;
+        arch->get(leftReg);
+        arch->sub(rightReg);
+        arch->jpos(false);
+
+        arch->get(rightReg);
+        arch->sub(leftReg);
+        arch->jpos(false);
+        arch->jzero(true);
+    }
+    arch->clearAll();
+}
+
+void LowLevelProgram::handleCall(Procedure_call* call){
+    //store all changed without dumping
+    //build initial address in "f", build each address in a, store, increment f, strk a, store f, jump to procedure address. 
+    //free all regs (no storing)
+    arch->storeAll();
+    Procedure* proc = program->proceduresTable[call->name];
+    unsigned long long initial = proc->initialAddr;
+    arch->buildNum(initial, G);
+
+    for(int i=0;i<call->args->argsVec.size();i++){
+        arch->buildAddress(call->args->argsVec[i], A);
+        arch->store(G);
+        arch->inc(G);
+    }
+    arch->strk(A);
+    arch->store(G);
+
+    /////////////////////// JUMP TO PROCEDURE SOMEHOW
+    arch->jump();
+    arch->clearAll();;
+}
+
+void LowLevelProgram::handleReturn(){
+    //if main just halt
+    //if procedure store callable jump to return address
+    if(dynamic_cast<Procedure*>(arch->programPart)){
+        Procedure* proc = dynamic_cast<Procedure*>(arch->programPart);
+        arch->storeReturn();
+        arch->buildNum(proc->retAddr, A);
+        arch->load(A);
+        arch->inc(A);
+        arch->inc(A);
+        arch->jumpr(A);
+    }else{
+        arch->halt();
+    }
 }
