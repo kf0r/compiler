@@ -64,12 +64,12 @@ public:
 class Register{
 public:
     int index;
-    std::string name;
+    //std::string name;
     bool changed;
     bool locked;
     Value* stored;
 
-    Register(int i);
+    //Register(int i);
     void freeRegister();
     void setVal(Value* val);
 };
@@ -96,6 +96,7 @@ public:
 class Architecture{
 public:
     std::vector<Value*> garbageCollector;
+    
     Program_part* programPart;
 
     Register regs[8];
@@ -162,7 +163,7 @@ public:
 
 
     LowLevelProgram(Program* whole);
-    void translateMain();
+    void generateLowBB();
     void translateProcedure(std::string name);
 
     void handleAssign(Assignment* assign);

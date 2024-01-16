@@ -5,14 +5,13 @@ int ASCII_LOWER_A = 97;
 //
 //Register
 ////////////////////////////////////////////////////////////////
-Register::Register(int i){
-    index=i;
-    name = "";
-    name.push_back(static_cast<char>(ASCII_LOWER_A+i));
-    changed = false;
-    locked = false;
-    stored = nullptr;
-}
+// Register::Register(int i){
+//     index=i;
+//     //name.push_back(static_cast<char>(ASCII_LOWER_A+i));
+//     changed = false;
+//     locked = false;
+//     stored = nullptr;
+// }
 
 void Register::freeRegister(){
     changed = false;
@@ -24,13 +23,14 @@ void Register::freeRegister(){
 //
 //Architecture
 ////////////////////////////////////////////////////////////////
-Architecture::Architecture(Program_part* part):regs{{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}}{
-    programPart = part;
-    for(int i=0;i<8;i++){
-        regs[i] = Register(i);
+Architecture::Architecture(Program_part* part) : programPart(part) {
+    for (int i = 0; i < 8; i++) {
+        regs[i].index=i;
+        regs[i].changed=false;
+        regs[i].locked=false;
+        regs[i].stored=nullptr;
     }
 }
-
 void Architecture::storeAll(){
     for(int i=1; i<6;i++){
         if(regs[i].changed){
@@ -112,6 +112,7 @@ void Architecture::storePrecheck(Identifier* id){
         }
     }
 }
+
 void Architecture::storePostcheck(Identifier* id){
     for(int i=1; i<6;i++){
         if(dynamic_cast<IndentifierArrPid*>(regs[i].stored)){
@@ -208,10 +209,6 @@ bool Architecture::isSameVal(Value* first, Value* second){
         return first->val==second->val;
     }
     return false;
-}
-
-void Architecture::buildNum(unsigned long long number, int where){
-////////////////////
 }
 
 int Architecture::putModifiedVal(Value* val){
@@ -349,7 +346,6 @@ bool Architecture::isCallable(Value* val){
         return false;
     }
 }
-
 
 
 ////////////////////////////////////////////////////////////////
@@ -529,4 +525,8 @@ void LowLevelProgram::handleReturn(){
     }else{
         arch->halt();
     }
+}
+
+void LowLevelProgram::generateLowBB(){
+    
 }

@@ -342,7 +342,7 @@ bool Program::semantic(){
     }   
     return success;
 }
-bool Program::compareOffsets(const Variable* a, const Variable* b) {
+bool Program::compareOffsets( Variable* a, Variable* b) {
     return a->offset < b->offset;
 }
 
@@ -350,6 +350,7 @@ bool Program::checkOverflow(unsigned long long prevAddr, unsigned long long newA
     if(prevAddr>newAddr){
         return false;
     }
+    return true;
 }
 
 bool Program::memoryManagement(){
@@ -360,7 +361,7 @@ bool Program::memoryManagement(){
         vars.push_back(entry.second);
     }
     std::sort(vars.begin(), vars.end(), compareOffsets);
-    
+
     //////////////MAIN MEMORY MANAGEMENT//////////////
 
     for(int i=0; i<vars.size();i++){

@@ -22,7 +22,7 @@ public:
     bool checkInitialisations();
     bool checkUsage();
     bool setAdresses();
-    bool compareOffsets(const Variable* a, const Variable* b);
+    static bool compareOffsets(Variable* a, Variable* b);
     bool checkOverflow(unsigned long long prevAddr, unsigned long long newAddr);
     void generateBB();
     void printBBs();
