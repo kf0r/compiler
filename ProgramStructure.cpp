@@ -2,6 +2,8 @@
 #include <stack>
 #include <iostream>
 
+unsigned long long MAXSIZE = 4611686018427387904;
+
 ////////////////////////////////////////////////////
 ////////////////////////TODO////////////////////////
 ///////////check redeclarations in calls////////////
@@ -350,6 +352,9 @@ bool Program::checkOverflow(unsigned long long prevAddr, unsigned long long newA
     if(prevAddr>newAddr){
         return false;
     }
+    if(newAddr>MAXSIZE){
+        return false;
+    }
     return true;
 }
 
@@ -382,7 +387,7 @@ bool Program::memoryManagement(){
         }else{
             return false;
         }
-
+        procedures->procedures[i]->toString();
         for(int j=0;j<procedures->procedures[i]->head->args->argsVec.size();i++){
             if(checkOverflow(prevAddr, memAddr)){
                 std::string arg = procedures->procedures[i]->head->args->argsVec[i]->val;

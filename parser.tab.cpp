@@ -1216,9 +1216,9 @@ yyreduce:
                     (yyval.programPointer)=program;
                     if(program->semantic()){
                         program->generateBB();
-                        program->printBBs();
+                        //program->printBBs();
                         LowLevelProgram* lowProgram = new LowLevelProgram(program);
-                        
+                        lowProgram->translate();
                     }else{
                         std::cout<<"Kompilacja zakonczona niepowodzeniem";
                     }

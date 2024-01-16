@@ -36,6 +36,7 @@ public:
     void setBB(Instruction* first);
     void addProcedureBB(Instruction* first, std::string name);
     void print(Block* starting);
+    void reset();
 };
 
 #endif

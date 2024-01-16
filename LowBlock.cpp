@@ -5,18 +5,17 @@ int ASCII_LOWER_A = 97;
 //
 //Register
 ////////////////////////////////////////////////////////////////
-// Register::Register(int i){
-//     index=i;
-//     //name.push_back(static_cast<char>(ASCII_LOWER_A+i));
-//     changed = false;
-//     locked = false;
-//     stored = nullptr;
-// }
-
-void Register::freeRegister(){
+Register::Register(){
     changed = false;
     locked = false;
     stored = nullptr;
+}
+
+void Register::freeRegister(){
+    this->changed = false;
+                 
+    this->locked = false;
+    this->stored = nullptr;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -25,12 +24,42 @@ void Register::freeRegister(){
 ////////////////////////////////////////////////////////////////
 Architecture::Architecture(Program_part* part) : programPart(part) {
     for (int i = 0; i < 8; i++) {
+        // Register* reg = new Register();
+        // regs[i] = *reg;
         regs[i].index=i;
         regs[i].changed=false;
         regs[i].locked=false;
         regs[i].stored=nullptr;
     }
 }
+
+void Architecture::setBlock(LowLevelBlock* block){
+    for(int i=0; i<8;i++){
+        if(regs[i].changed){
+            std::cout<<"\033[31;1;4mFAULT\033[0m REGISTER IS CHANGED\n";
+        }
+        if(regs[i].locked){
+            std::cout<<"\033[31;1;4mFAULT\033[0m REGISTER IS LOCKED\n";
+        }
+    }
+    currBlock = block;
+}
+
+void Architecture::forceClear(){
+    for(int i=0; i<8;i++){
+        regs[i].freeRegister();
+    }
+}
+
+void Architecture::setCurrentPart(Program_part* part){
+    for(int i=0; i<8;i++){
+        if(regs[i].locked){
+            std::cout<<"\033[31;1;4mFAULT\033[0m REGISTER IS LOCKED\n";
+        }
+    }
+    programPart = part;
+}
+
 void Architecture::storeAll(){
     for(int i=1; i<6;i++){
         if(regs[i].changed){
@@ -68,7 +97,7 @@ void Architecture::clearAll(){
         regs[i].freeRegister();
     }
     for(int i=0; i<garbageCollector.size();i++){
-        delete(garbageCollector[i]);
+       // delete(garbageCollector[i]);
     }
 }
 
@@ -79,11 +108,14 @@ void Architecture::dumpAll(){
             get(i);
             store(H);
         }
+        if(regs[i].locked){
+            std::cout<<"\033[31;1;4mFAULT\033[0m CLEARING LOCKED REGISTER\n";
+        }
         regs[i].freeRegister();
     }
 
     for(int i=0; i<garbageCollector.size();i++){
-        delete(garbageCollector[i]);
+        //delete(garbageCollector[i]);
     }
 }
 
@@ -507,7 +539,7 @@ void LowLevelProgram::handleCall(Procedure_call* call){
     arch->store(G);
 
     /////////////////////// JUMP TO PROCEDURE SOMEHOW
-    arch->jump();
+    arch->jump(call->name);
     arch->clearAll();;
 }
 
@@ -516,17 +548,74 @@ void LowLevelProgram::handleReturn(){
     //if procedure store callable jump to return address
     if(dynamic_cast<Procedure*>(arch->programPart)){
         Procedure* proc = dynamic_cast<Procedure*>(arch->programPart);
-        arch->storeReturn();
+        arch->returnMerger();
         arch->buildNum(proc->retAddr, A);
         arch->load(A);
         arch->inc(A);
         arch->inc(A);
         arch->jumpr(A);
     }else{
-        arch->halt();
+        arch->haltMain();
     }
 }
 
-void LowLevelProgram::generateLowBB(){
-    
+LowLevelBlock* LowLevelProgram::generateLowBB(Block* block){
+    if(block->visited){
+        return mapBlock[block->index];
+    }
+    LowLevelBlock* lowBlock = new LowLevelBlock();
+    arch->setBlock(lowBlock);
+    bool isCond = false;
+    for(int i=0;i<block->inst.size();i++){
+        if(dynamic_cast<Assignment*>(block->inst[i])){
+            handleAssign(dynamic_cast<Assignment*>(block->inst[i]));
+        }else if(dynamic_cast<Read*>(block->inst[i])){
+            handleRead(dynamic_cast<Read*>(block->inst[i]));
+        }else if(dynamic_cast<Write*>(block->inst[i])){
+            handleWrite(dynamic_cast<Write*>(block->inst[i]));
+        }else if(dynamic_cast<Conditional*>(block->inst[i])){
+            isCond=true;
+            handleCond(dynamic_cast<Conditional*>(block->inst[i])->cond);
+        }else if(dynamic_cast<Procedure_call*>(block->inst[i])){
+            handleCall(dynamic_cast<Procedure_call*>(block->inst[i]));
+        }
+    }
+    lowBlock->isCond = isCond;
+    lowBlock->index = block->index;
+    block->visited = true;
+    mapBlock.insert(std::pair<int, LowLevelBlock*> (lowBlock->index, lowBlock));
+    if(isCond){
+        if(block->ifTrue==nullptr){
+            handleReturn();
+        }else{
+            arch->dumpAll();
+            lowBlock->next = generateLowBB(block->ifTrue);
+        }
+    }else{
+        if(block->ifTrue==nullptr){
+            handleReturn();
+        }else{
+            arch->dumpAll();
+            lowBlock->next = generateLowBB(block->ifTrue);
+        }
+        if(block->ifFalse==nullptr){
+            handleReturn();
+        }else{
+            arch->dumpAll();
+            lowBlock->nextElse = generateLowBB(block->ifTrue);
+        }
+    }
+    return lowBlock;
 }
+
+void LowLevelProgram::translate(){
+    mainBlock = generateLowBB(program->BBs->initialBlock);
+    arch->forceClear();
+    for(int i=0;i<program->procedures->procedures.size();i++){
+        std::string name = program->procedures->procedures[i]->head->name;
+        arch->setCurrentPart(program->proceduresTable[name]);
+        LowLevelBlock* procBlock = generateLowBB(program->BBs->procedureBBs[name]);
+        proceduresBlock.insert(std::pair<std::string, LowLevelBlock*> (name, procBlock));
+    }
+}
+

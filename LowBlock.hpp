@@ -18,23 +18,24 @@ public:
     int index;
 };
 
-class Builder: public LowInstruction{
-public:
-    unsigned long long numberBuild;
-};
+// class Builder: public LowInstruction{
+// public:
+//     unsigned long long numberBuild;
+// };
 
-class Multiplier: public LowInstruction{
-public:
-    int rightTarget;
-};
-class Modulator: public LowInstruction{
-public:
-    int rightTarget;
-};
-class Divider: public LowInstruction{
-public:
-    int rightTarget;
-};
+// class Multiplier: public LowInstruction{
+// public:
+//     int rightTarget;
+// };
+// class Modulator: public LowInstruction{
+// public:
+//     int rightTarget;
+// };
+// class Divider: public LowInstruction{
+// public:
+//     int rightTarget;
+// };
+
 class Jumper: public LowInstruction{
 public:
     LowInstruction* jumpTo;
@@ -52,14 +53,13 @@ public:
 class LowLevelBlock{
 public:
     int index;
+    bool isCond;
+    bool returning;
     std::vector<LowInstruction*> instr;
     LowLevelBlock* next;
+    LowLevelBlock* nextElse;
 };
 
-class LowConditional: public LowLevelBlock{
-public:
-    LowConditional* elseNext;
-};
 
 class Register{
 public:
@@ -69,7 +69,7 @@ public:
     bool locked;
     Value* stored;
 
-    //Register(int i);
+    Register();
     void freeRegister();
     void setVal(Value* val);
 };
@@ -92,16 +92,18 @@ public:
 
 //sorry for my english its 1AM and its not my native language xd.
 
-//important optimisation - dont store variables in symbol table before returning.
 class Architecture{
 public:
     std::vector<Value*> garbageCollector;
-    
+
+    LowLevelBlock* currBlock;
     Program_part* programPart;
 
     Register regs[8];
 
     Architecture(Program_part* part);
+    void setBlock(LowLevelBlock* block);
+    void setCurrentPart(Program_part* part);
     void dumpAll();
     void dumpUnlocked();
 
@@ -114,13 +116,16 @@ public:
     void getIntoA(Value* val);
     bool isSameVal(Value* first, Value* second);
     bool isCallable(Value* val);
-    void buildNum(unsigned long long number, int where);
+    void forceClear();
     void buildAddress(Value* val, int where);
     int putModifiedVal(Value* val);
     int getBestFree();
-
     void storePrecheck(Identifier* id);
     void storePostcheck(Identifier* id);
+
+    void buildNum(unsigned long long number, int where);
+    void returnMerger();
+
     void add(int right);
     void sub(int right);
 
@@ -143,19 +148,21 @@ public:
     void store(int reg);
     void strk(int reg);
 
-    void jump();
+    void jump(std::string procName);
     void jumpr(int reg);
     
     void jzero(bool cond);
     void jpos(bool cond);
 
-    void halt();
+    void haltMain();
 };
 
 class LowLevelProgram{
 public:
+    int index = 0;
     Architecture* arch;
     LowLevelBlock* mainBlock;
+    std::map<int, LowLevelBlock*> mapBlock;
     std::map<std::string, LowLevelBlock*> proceduresBlock;
     Program* program;
     unsigned long long addr;
@@ -163,8 +170,8 @@ public:
 
 
     LowLevelProgram(Program* whole);
-    void generateLowBB();
-    void translateProcedure(std::string name);
+    LowLevelBlock* generateLowBB(Block* block);
+    void translate();
 
     void handleAssign(Assignment* assign);
     void handleRead(Read* read);
@@ -175,7 +182,6 @@ public:
     //if in main, instrutuon HALT
     //if in procedure, dump only callable vars, build return addres, load, jump
     void handleReturn(); 
-
 };
 
 

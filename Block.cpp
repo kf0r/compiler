@@ -95,3 +95,37 @@ void BlockRepresentation::print(Block* starting){
         }
     }
 }
+
+void BlockRepresentation::reset(){
+    std::stack<Block*> stack;
+    stack.push(initialBlock);
+    while(!stack.empty()){
+        Block* top = stack.top();
+        stack.pop();
+        if(top->visited){
+            top->visited=false;
+        }
+        if(top->ifFalse!=nullptr&&top->ifFalse->visited){
+            stack.push(top->ifFalse);
+        }
+        if(top->ifTrue!=nullptr&&top->ifTrue->visited){
+            stack.push(top->ifTrue);
+        }
+    }
+    for (auto pair : procedureBBs){
+        stack.push(pair.second);
+        while(!stack.empty()){
+            Block* top = stack.top();
+            stack.pop();
+            if(top->visited){
+                top->visited=false;
+            }
+            if(top->ifFalse!=nullptr&&top->ifFalse->visited){
+                stack.push(top->ifFalse);
+            }
+            if(top->ifTrue!=nullptr&&top->ifTrue->visited){
+                stack.push(top->ifTrue);
+            }
+        }
+    }
+}
