@@ -91,6 +91,7 @@ public:
 class Variable{
 public:
     std::string id;
+    bool isUsed=false;
     bool isInitialized=false;
     bool isOffsettable;
     unsigned long long adress;

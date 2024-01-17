@@ -58,6 +58,7 @@ bool IndentifierArrPid::isArray(){
 ///////////////////////////////////////////////
 bool Declaration::declare(Identifier* var){
     decsVec.push_back(var);
+    return true;
     ///std::cout<<var->val<<std::endl;
 }
 
@@ -66,6 +67,7 @@ bool Declaration::declare(Identifier* var){
 ///////////////////////////////////////////////
 bool Args::addArg(Identifier* var){
     argsVec.push_back(var);
+    return true;
 }
 
 void Expression::test(){

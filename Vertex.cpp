@@ -5,8 +5,8 @@
 ///////////////////////////////////////////////
 //INSTRUCTION
 ///////////////////////////////////////////////
-std::vector<Value*> Instruction::getVars(){
-    std::vector<Value*> empty;
+std::vector<Identifier*> Instruction::getVars(){
+    std::vector<Identifier*> empty;
     return empty;
 }
 
@@ -38,19 +38,21 @@ std::string Merger::print(){
 ///////////////////////////////////////////////
 //CONDITIONAL SIMPLE
 ///////////////////////////////////////////////
-std::vector<Value*> ConditionalSimple::getVars(){
-    std::vector<Value*> vars;
+std::vector<Identifier*> ConditionalSimple::getVars(){
+    std::vector<Identifier*> vars;
     //if value is a number, getVar returns empty string. Its strictly for semantic analisys
     if(cond->leftVal->getIdentifier()!=nullptr){
-        vars.push_back(cond->leftVal);
+        if(dynamic_cast<Identifier*>(cond->leftVal)){
+            vars.push_back(dynamic_cast<Identifier*>(cond->leftVal));
+        }
     }
     if(cond->rightVal->getIdentifier()!=nullptr){
-        vars.push_back(cond->rightVal);
+        if(dynamic_cast<Identifier*>(cond->rightVal)){
+            vars.push_back(dynamic_cast<Identifier*>(cond->rightVal));
+        }
     }
-    
     return vars;
 }
-//yep i could do some makro but in my philosphy its more readable :P
 
 std::vector<Instruction*> ConditionalSimple::getNext(){
     std::vector<Instruction*> nexts;
@@ -95,16 +97,13 @@ std::vector<Instruction*> Conditional::getNext(){
 ///////////////////////////////////////////////
 //ASSIGNMENT
 ///////////////////////////////////////////////
-std::vector<Value*> Assignment::getVars(){
-    std::vector<Value*> vars;
+std::vector<Identifier*> Assignment::getVars(){
+    std::vector<Identifier*> vars;
     vars.push_back(identifier);
-    //std::cout<<expression->left->getVar()<<std::endl;
     if(expression->left->getIdentifier()!=nullptr){
         vars.push_back(expression->left->getIdentifier());
     }
     if(expression->right!=nullptr ){
-        /*not sure if i can do it `if(expression->right!=nullptr && expression->right->getVar()!="")`, if second condition would be checked
-        too what would result in segmentation fault so I'll nest this condition*/
         if(expression->right->getIdentifier()!=nullptr){
             vars.push_back(expression->right->getIdentifier());
         }
@@ -113,7 +112,7 @@ std::vector<Value*> Assignment::getVars(){
 }
 
 std::string Assignment::print(){
-    if(dynamic_cast<ExprComplex*>(expression)){ //tu jest linijka 116
+    if(dynamic_cast<ExprComplex*>(expression)){
         ExprComplex* comp = dynamic_cast<ExprComplex*>(expression);
         return"ASSIGN "+identifier->val+" = "+comp->left->val+comp->operand+comp->right->val+"\n";
     }else{
@@ -123,10 +122,13 @@ std::string Assignment::print(){
 ///////////////////////////////////////////////
 //PROCEDURE CALLL
 ///////////////////////////////////////////////
-std::vector<Value*> Procedure_call::getVars(){
+std::vector<Identifier*> Procedure_call::getVars(){
     //procedure calls are validated differently, so this returns empty vector
-    std::vector<Value*> empty;
-    return empty;
+    std::vector<Identifier*> vars;
+    for(int i=0;i<args->argsVec.size();i++){
+        vars.push_back(args->argsVec[i]);
+    }
+    return vars;
 }
 
 bool Procedure_call::isCall(){
@@ -144,8 +146,8 @@ std::string Procedure_call::print(){
 ///////////////////////////////////////////////
 //WRITE
 ///////////////////////////////////////////////
-std::vector<Value*> Write::getVars(){
-    std::vector<Value*> vars;
+std::vector<Identifier*> Write::getVars(){
+    std::vector<Identifier*> vars;
     if(val->getIdentifier()!=nullptr){
         vars.push_back(val->getIdentifier());
     }
@@ -159,8 +161,8 @@ std::string Write::print(){
 ///////////////////////////////////////////////
 //READ
 ///////////////////////////////////////////////
-std::vector<Value*> Read::getVars(){
-    std::vector<Value*> vars;
+std::vector<Identifier*> Read::getVars(){
+    std::vector<Identifier*> vars;
     vars.push_back(ident);
     return vars;
 }

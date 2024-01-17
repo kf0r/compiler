@@ -172,14 +172,23 @@ program_all: procedures main {
                     program->main = $2;
                     program->procedures = $1;
                     $$=program;
-                    if(program->semantic()){
-                        program->generateBB();
-                        //program->printBBs();
-                        LowLevelProgram* lowProgram = new LowLevelProgram(program);
-                        lowProgram->translate();
-                    }else{
+                    program->semanticBis();
+                    if(!program->valid){
                         std::cout<<"Kompilacja zakonczona niepowodzeniem";
+                    }else{
+                        program->generateBB();
+                        program->printBBs();
+                    //     LowLevelProgram* lowProgram = new LowLevelProgram(program);
+                    //     lowProgram->translate();
                     }
+                    // if(program->semantic()){
+                    //     program->generateBB();
+                    //     //program->printBBs();
+                    //     LowLevelProgram* lowProgram = new LowLevelProgram(program);
+                    //     lowProgram->translate();
+                    // }else{
+                    //     std::cout<<"Kompilacja zakonczona niepowodzeniem";
+                    // }
                 }
 ;
 procedures: procedures PROCEDURE proc_head IS declarations IN commands END {

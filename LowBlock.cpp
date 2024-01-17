@@ -168,7 +168,7 @@ int Architecture::getBestFree(){
             return i;
         }
     }
-    for(int i=i;i<6;i++){
+    for(int i=1;i<6;i++){
         if(!regs[i].locked){
             buildAddress(regs[i].stored, 7);
             get(i);
@@ -247,6 +247,14 @@ int Architecture::putModifiedVal(Value* val){
     for(int i=1; i<6;i++){
         if(isSameVal(regs[i].stored, val)){
             regs[i].changed=true;
+            put(i);
+            return i;
+        }
+    }
+    for(int i=1; i<6;i++){
+        if(regs[i].stored==nullptr){
+            regs[i].changed=true;
+            regs[i].stored = val;
             put(i);
             return i;
         }
@@ -387,7 +395,7 @@ bool Architecture::isCallable(Value* val){
 
 LowLevelProgram::LowLevelProgram(Program* whole){
     program = whole;
-    Architecture* arch = new Architecture(whole->main);
+    arch = new Architecture(whole->main);
 }
 
 //if we assign a=b-c we have to check for x[a] in registers

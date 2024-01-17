@@ -18,7 +18,7 @@ public:
 
 
     virtual bool isCall();
-    virtual std::vector<Value*> getVars();
+    virtual std::vector<Identifier*> getVars();
     virtual std::vector<Instruction*> getNext();
     virtual std::string print();
 };
@@ -33,7 +33,7 @@ public:
     Instruction* nextIfTrue;
     Condition* cond;
 
-    std::vector<Value*> getVars();
+    std::vector<Identifier*> getVars();
     virtual std::vector<Instruction*> getNext();
     virtual std::string print();
 };
@@ -59,7 +59,7 @@ public:
     Expression* expression;
     Identifier* identifier;
 
-    std::vector<Value*> getVars();
+    std::vector<Identifier*> getVars();
     std::string print();
 };
 
@@ -68,7 +68,7 @@ public:
     Args* args;
     std::string name;
 
-    std::vector<Value*> getVars();
+    std::vector<Identifier*> getVars();
     bool isCall();
     std::string print();
 };
@@ -77,14 +77,14 @@ class Write: public Instruction{
 public:
     Value* val;
 
-    std::vector<Value*> getVars();
+    std::vector<Identifier*> getVars();
     std::string print();
 };
 
 class Read: public Instruction{
 public:
     Identifier* ident;
-    std::vector<Value*> getVars();
+    std::vector<Identifier*> getVars();
     std::string print();
 };
 

@@ -16,18 +16,37 @@ public:
     ProceduresAll* procedures;
     Main* main;
     BlockRepresentation* BBs;
+    bool valid = true;
 
     bool validateCallMain(Procedure_call* call);
     bool validateCallProc(Procedure_call* call, Procedure* current);
     bool semantic();
     bool memoryManagement();
-    bool checkInitialisations();
-    bool checkUsage();
-    bool setAdresses();
     static bool compareOffsets(Variable* a, Variable* b);
     bool checkOverflow(unsigned long long prevAddr, unsigned long long newAddr);
     void generateBB();
     void printBBs();
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    void semanticBis();
+    void procedureRedeclarations(); 
+    void variableRedeclaration(Program_part* programPart);
+    void DFS(Program_part* programPart);
+    void reset(Program_part* programPart);
+    void BFS(Program_part* part);
+
+    void validateVariableUsage(Program_part* part, Identifier* identifier);
+    void validateCall(Program_part* part, Procedure_call* call);
+    void insertSymbol(Program_part* programPart, Identifier* id);
+
+    void insertCall(Procedure* procedure, Identifier* id);
+    
+    void setInitialized(Program_part* part, Identifier* id);
+    void setUsage(Program_part* part, Identifier* id);
+
+   // bool checkInitialisations(Program_part* part, Identifier* id);
+    void setAdresses();
 
 };
 
