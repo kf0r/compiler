@@ -7,7 +7,7 @@ void Program::procedureRedeclarations(){
     for(int i=0; i<procedures->procedures.size();i++){
         Procedure* current = procedures->procedures[i];
         std::string currentName = current->head->name;
-        if(proceduresTable[currentName]){
+        if(proceduresTable.find(currentName)!=proceduresTable.end()){
             std::cout<<"Redeklaracja procedury "<<currentName<<std::endl;
             valid = false;
         }else{
@@ -23,52 +23,33 @@ void Program::variableRedeclaration(Program_part* programPart){
         for(int i=0;i<proc->decs->decsVec.size();i++){
 
             Identifier* id = proc->decs->decsVec[i];
-            if(proc->symbolTable[id->val]){
+            if(proc->symbolTable.find(id->val)!=proc->symbolTable.end()){
                 std::cout<<"Redeklaracja zmiennej "<<id->val<<" w procedurze "<<proc->head->name<<std::endl;
                 valid = false;
-            }else{
-                insertSymbol(proc, id);
             }
-
+            insertSymbol(proc, id);
         }
         }
         for(int i=0;i<proc->head->args->argsVec.size();i++){
             bool shouldInsert = true;
             Identifier* id = proc->head->args->argsVec[i];
-            if(proc->symbolTable[id->val]){
+
+            if(proc->symbolTable.find(id->val)!=proc->symbolTable.end()){
                 std::cout<<"Zmienna "<<id->val<<" wcześniej zadeklarowana w DEKLARACJACH w "<<proc->head->name<<std::endl;
                 valid = false;
                 shouldInsert = false;
             }
-            if(proc->callableTable[id->val]){
+            if(proc->callableTable.find(id->val)!=proc->callableTable.end()){
                 std::cout<<"Zmienna "<<id->val<<" wcześniej zadeklarowana w ARGUMENTACH w "<<proc->head->name<<std::endl;
                 valid = false;
                 shouldInsert = false;
             }
-            if(shouldInsert){
-                //insertCall(proc, id);
-                 Variable* var = new Variable();
-    var->id = id->val;
-    if(id->isArray()){
-        var->isOffsettable = true;
-    }else{
-        var->isOffsettable = false;
-    }
-    var->isInitialized = true;
-    var->isUsed = true;
-    std::cout<<"INSERTING "<<var->id<<std::endl;
-    std::string name = id->val;
-    proc->callableTable.insert(std::pair<std::string, Variable*>(var->id, var));
-    if(proc->callableTable[var->id]){
-        std::cout<<"INSERTed "<<var->id<<" successfully"<<std::endl;
-    }
-            }
+            insertCall(proc, id);
         }
     }else{
         for(int i=0;i<programPart->decs->decsVec.size();i++){
-
             Identifier* id = programPart->decs->decsVec[i];
-            if(programPart->symbolTable[id->val]){
+            if(programPart->symbolTable.find(id->val)!=programPart->symbolTable.end()){
                 std::cout<<"Redeklaracja zmiennej "<<id->val<<" w MAIN"<<std::endl;
                 valid = false;
             }else{
@@ -83,6 +64,7 @@ void Program::DFS(Program_part* part){
     std::stack<Instruction*> instStack;
     instStack.push(part->comms->getHead());
     while(!instStack.empty()){
+        
         Instruction* top = instStack.top();
         instStack.pop();
         if(!top->visited){
@@ -94,13 +76,13 @@ void Program::DFS(Program_part* part){
                     }
                 }
             }
-            std::vector<Identifier*> identifiers = top->getVars();
-            for(int i=0;i<identifiers.size();i++){
-                validateVariableUsage(part, identifiers[i]);
-            }
-            
             if(dynamic_cast<Procedure_call*>(top)){
                 validateCall(part,dynamic_cast<Procedure_call*>(top));
+            }else{
+                std::vector<Identifier*> identifiers = top->getVars();
+                for(int i=0;i<identifiers.size();i++){
+                    validateVariableUsage(part, identifiers[i]);
+                }
             }
         }
     }
@@ -135,16 +117,19 @@ void Program::BFS(Program_part* part){
             inst->visited=true;
             for(int i=0; i<inst->getNext().size();i++){
                 if(inst->getNext()[i]!=nullptr){
-                    if(inst->getNext()[i]->visited){
+                    if(!inst->getNext()[i]->visited){
                         queue.push_back(inst->getNext()[i]);
                     }
                 }
             }
             if(dynamic_cast<Assignment*>(inst)){
                 setInitialized(part, dynamic_cast<Assignment*>(inst)->identifier);
+            }else if(dynamic_cast<Read*>(inst)){
+                setInitialized(part, dynamic_cast<Read*>(inst)->ident);
             }
             for(int i=0;i<inst->getVars().size();i++){
                 setUsage(part,inst->getVars()[i]);
+                checkInitialisations(part, inst->getVars()[i]);
             }
         }
     }
@@ -160,12 +145,7 @@ void Program::insertSymbol(Program_part* programPart, Identifier* id){
     }else{
         var->isOffsettable = false;
     }
-    std::string name = id->val;
-    std::cout<<"INSERTING "<<var->id<<std::endl;
     programPart->symbolTable.insert(std::pair<std::string, Variable*>(var->id, var));
-    if(programPart->symbolTable[var->id]){
-        std::cout<<"INSERTed "<<var->id<<" successfully"<<std::endl;
-    }
 }
 
 void Program::insertCall(Procedure* procedure, Identifier* id){
@@ -178,73 +158,86 @@ void Program::insertCall(Procedure* procedure, Identifier* id){
     }
     var->isInitialized = true;
     var->isUsed = true;
-    std::cout<<"INSERTING "<<var->id<<std::endl;
-    std::string name = id->val;
+    //std::cout<<var->id;
     procedure->callableTable.insert(std::pair<std::string, Variable*>(var->id, var));
-    if(procedure->callableTable[var->id]){
-        std::cout<<"INSERTed "<<var->id<<" successfully"<<std::endl;
-    }
 }
 
 void Program::setInitialized(Program_part* part, Identifier* id){
-    if(part->symbolTable[id->val]!=nullptr){
+    if(part->symbolTable.find(id->val)!=part->symbolTable.end()){
         part->symbolTable[id->val]->isInitialized=true;
     }
 }
 
 void Program::setUsage(Program_part* part, Identifier* id){
-    if(part->symbolTable[id->val]!=nullptr){
+    if(part->symbolTable.find(id->val)!=part->symbolTable.end()){
         part->symbolTable[id->val]->isUsed=true;
-        if(!part->symbolTable[id->val]->isInitialized){
-            std::cout<<"Mozliwe niezainicjalizwanie zmiennej "<<id->val;
+    }   
+}
+
+void Program::checkInitialisations(Program_part* part, Identifier* id){
+    if(part->symbolTable.find(id->val)!=part->symbolTable.end()){
+        if(!part->symbolTable[id->val]->isInitialized&&!part->symbolTable[id->val]->isOffsettable){
+            std::cout<<"Mozliwe uzycie niezainicjalizowanej zmiennej "<<id->val<<" w ";
             if(dynamic_cast<Procedure*>(part)){
-                std::cout<<" w procedurze "<< dynamic_cast<Procedure*>(part)->head->name<<std::endl;
+                std::cout<<dynamic_cast<Procedure*>(part)->head->name<<std::endl;
             }else{
-                std::cout<<" w MAIN\n";
+                std::cout<<"MAIN\n";
             }
         }
+    }
+    if(dynamic_cast<IndentifierArrPid*>(id)){
+        IndentifierArrPid* array= dynamic_cast<IndentifierArrPid*>(id);
+        Identifier* temp = new Identifier();
+        temp->val = array->address;
+        checkInitialisations(part, temp);
+        delete(temp);  
     }
 }
 
 void Program::validateVariableUsage(Program_part* part, Identifier* identifier){
     if(dynamic_cast<Procedure*>(part)){
         Procedure* proc = dynamic_cast<Procedure*>(part);
-        Variable* var = part->symbolTable[identifier->val];
-        if(var==nullptr){
-            var = proc->callableTable[identifier->val];
-        }
-        if(var==nullptr){
+        if(proc->symbolTable.find(identifier->val)!=proc->symbolTable.end()){
+            Variable* var = proc->symbolTable[identifier->val];
+            if(var->isOffsettable!=identifier->isArray()){
+                std::cout<<"Nieprawidłowe uzycie tablicy "<<identifier->val<<" w procedurze "<<proc->head->name<<std::endl;
+                valid=false;
+            }
+        }else if(proc->callableTable.find(identifier->val)!=proc->callableTable.end()){
+            Variable* var = proc->callableTable[identifier->val];
+            if(var->isOffsettable!=identifier->isArray()){
+                std::cout<<"Nieprawidłowe uzycie tablicy "<<identifier->val<<" w procedurze "<<proc->head->name<<std::endl;
+                valid=false;
+            }
+        }else{
             std::cout<<"Uzycie nieznanej zmiennej "<<identifier->val<<" w procedurze "<<proc->head->name<<std::endl;
             valid=false;
-        }else if(var->isOffsettable!=identifier->isArray()){
-            std::cout<<"Nieprawidłowe uzycie tablicy "<<identifier->val<<" w procedurze "<<proc->head->name<<std::endl;
-            valid=false;
         }
-
         if(dynamic_cast<IndentifierArrPid*>(identifier)){
             IndentifierArrPid* array = dynamic_cast<IndentifierArrPid*>(identifier);
             std::string address = array->address;
-            if(!part->symbolTable[address]&&!proc->callableTable[address]){
+            if(part->symbolTable.find(address)==part->symbolTable.end()&&proc->callableTable.find(address)==proc->callableTable.end()){
                 valid=false;
                 std::cout<<"Uzycie nieznanego adresu "<<address<<" tablicy "<<identifier->val<<" w procedurze "<<proc->head->name<<std::endl;
             }
         }
     }else{
-        Variable* var = part->symbolTable[identifier->val];
-        if(var==nullptr){
+        if(part->symbolTable.find(identifier->val)==part->symbolTable.end()){
+            valid = false;
             std::cout<<"Uzycie nieznanej zmiennej "<<identifier->val<<" w MAIN "<<std::endl;
-            valid=false;
-        }else if(var->isOffsettable!=identifier->isArray()){
-            std::cout<<"Nieprawidłowe uzycie tablicy "<<identifier->val<<" w MAIN "<<std::endl;
-            valid=false;
-        }
-
-        if(dynamic_cast<IndentifierArrPid*>(identifier)){
-            IndentifierArrPid* array = dynamic_cast<IndentifierArrPid*>(identifier);
-            std::string address = array->address;
-            if(!part->symbolTable[address]){
+        }else{
+            Variable* var = part->symbolTable[identifier->val];
+            if(var->isOffsettable!=identifier->isArray()){
+                std::cout<<"Nieprawidłowe uzycie tablicy "<<identifier->val<<" w MAIN "<<std::endl;
                 valid=false;
-                std::cout<<"Uzycie nieznanego adresu "<<address<<" tablicy "<<identifier->val<<" w MAIN "<<std::endl;
+            }
+            if(dynamic_cast<IndentifierArrPid*>(identifier)){
+                IndentifierArrPid* array = dynamic_cast<IndentifierArrPid*>(identifier);
+                std::string address = array->address;
+                if(part->symbolTable.find(address)==part->symbolTable.end()){
+                    valid=false;
+                    std::cout<<"Uzycie nieznanego adresu "<<address<<" tablicy "<<identifier->val<<" w MAIN "<<std::endl;
+                }
             }
         }
     }
@@ -263,7 +256,7 @@ void Program::validateCall(Program_part* part, Procedure_call* call){
 }
 
 bool Program::validateCallProc(Procedure_call* call, Procedure* current){
-    if(!proceduresTable[call->name]){
+    if(proceduresTable.find(call->name)==proceduresTable.end()){
         std::cout<<"Wywołanie nieznanej funkcji "<<call->name<<" w "<<current->head->name<<std::endl; 
         return false;
     }
@@ -281,9 +274,9 @@ bool Program::validateCallProc(Procedure_call* call, Procedure* current){
         Variable* varInCalled = proceduresTable[call->name]->callableTable[inCalled->val];
         Variable* varGiven;
 
-        if(current->symbolTable[given->val]){
+        if(current->symbolTable.find(given->val)!=current->symbolTable.end()){
             varGiven = current->symbolTable[given->val];
-        }else if(current->callableTable[given->val]){
+        }else if(current->callableTable.find(given->val)!=current->callableTable.end()){
             varGiven = current->callableTable[given->val];
         }else{
             std::cout<<"Nieznany argument przy wywołaniu funkcji "<<call->name<<" w "<<current->head->name<<std::endl;
@@ -311,7 +304,7 @@ bool Program::validateCallProc(Procedure_call* call, Procedure* current){
 }
 
 bool Program::validateCallMain(Procedure_call* call){
-        if(!proceduresTable[call->name]){
+        if(proceduresTable.find(call->name)==proceduresTable.end()){
         std::cout<<"Wywołanie nieznanej funkcji "<<call->name<<std::endl; 
         return false;
     }
@@ -322,16 +315,16 @@ bool Program::validateCallMain(Procedure_call* call){
     for(int i=0; i<proceduresTable[call->name]->head->args->argsVec.size(); i++){
         Identifier* inCalled = proceduresTable[call->name]->head->args->argsVec[i];
         Identifier* given = call->args->argsVec[i];
+        std::cout<<inCalled->val<<std::endl;
         Variable* varInCalled = proceduresTable[call->name]->callableTable[inCalled->val];
         Variable* varGiven;
 
-        if(main->symbolTable[given->val]){
+        if(main->symbolTable.find(given->val)!=main->symbolTable.end()){
             varGiven = main->symbolTable[given->val];
         }else{
             std::cout<<"Nieznany argument przy wywołaniu funkcji "<<call->name<<std::endl;
             return false;
         }
-
         if(varInCalled->isOffsettable){
             //We get indeksed array, so not array, but element of an array, so error.
             if(given->isArray()){
@@ -354,10 +347,6 @@ bool Program::validateCallMain(Procedure_call* call){
 
 void Program::semanticBis(){
     procedureRedeclarations();
-    variableRedeclaration(main);
-    DFS(main);
-    reset(main);
-    BFS(main);
     for(int i=0;i<procedures->procedures.size();i++){
         Procedure* current = procedures->procedures[i];
         variableRedeclaration(current);
@@ -365,6 +354,10 @@ void Program::semanticBis(){
         reset(current);
         BFS(current);
     }
+    variableRedeclaration(main);
+    DFS(main);
+    reset(main);
+    BFS(main);
 }
 
 void Program::generateBB(){
