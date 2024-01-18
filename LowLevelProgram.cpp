@@ -136,7 +136,7 @@ void LowLevelProgram::handleCond(Condition* cond){
         arch->jpos(false);
         arch->jzero(true);
     }
-    std::cout<<"CONDITIONAL: "<<arch->currBlock->index<<std::endl;
+    //std::cout<<"CONDITIONAL: "<<arch->currBlock->index<<std::endl;
     arch->clearAll();
 }
 
@@ -179,6 +179,18 @@ void LowLevelProgram::handleReturn(){
     }
 }
 
+void LowLevelProgram::setReturns(LowLevelBlock* lowBlock, Block* block){
+    if(lowBlock->isCond){
+        if(block->ifTrue==nullptr||block->ifFalse==nullptr){
+            handleReturn();
+        }
+    }else{
+        if(block->ifTrue==nullptr){
+            handleReturn();
+        }
+    }
+}
+
 LowLevelBlock* LowLevelProgram::generateLowBB(Block* block){
     std::cout<<"generating lowBB: "<<block->index<<std::endl;
     if(block->visited){
@@ -205,31 +217,14 @@ LowLevelBlock* LowLevelProgram::generateLowBB(Block* block){
     lowBlock->index = block->index;
     block->visited = true;
     mapBlock.insert(std::pair<int, LowLevelBlock*> (lowBlock->index, lowBlock));
-    if(isCond){
-        std::cout<<"CONDITIONAL: "<<lowBlock->index<<std::endl;
-        if(block->ifTrue==nullptr){
-            std::cout<<"IF TRUE IS NULL FOR: "<<block->index<<std::endl;
-            handleReturn();
-        }else{
-            arch->dumpAll();
-            lowBlock->next = generateLowBB(block->ifTrue);
-        }
-        if(block->ifFalse==nullptr){
-            std::cout<<"IF FALSE IS NULL FOR: "<<block->index<<std::endl;
-            handleReturn();
-        }else{
-            arch->dumpAll();
-            lowBlock->nextElse = generateLowBB(block->ifFalse);
-        }
-    }else{
-        std::cout<<"UNCONDITIONAL: "<<lowBlock->index<<std::endl;
-        if(block->ifTrue==nullptr){
-            std::cout<<"RETURN: "<<block->index<<std::endl;
-            handleReturn();
-        }else{
-            arch->dumpAll();
-            lowBlock->next = generateLowBB(block->ifTrue);
-        }
+    setReturns(lowBlock,block);
+    arch->dumpAll();
+    if(block->ifFalse!=nullptr){
+        lowBlock->nextElse=generateLowBB(block->ifFalse);
+    }
+    arch->clearAll();
+    if(block->ifTrue!=nullptr){
+        lowBlock->next=generateLowBB(block->ifTrue);
     }
     return lowBlock;
 }

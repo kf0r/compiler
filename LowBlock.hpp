@@ -212,6 +212,8 @@ public:
     void generateDiv();
     void generateMult();
 
+    void setReturns(LowLevelBlock* lowBlock, Block* block);
+
     void link(LowLevelBlock* block);
 };
 
