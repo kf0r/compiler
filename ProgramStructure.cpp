@@ -413,6 +413,7 @@ void Program::memoryManagement(){
             prevAddr=memAddr;
             memAddr+=1+vars[i]->offset;
         }else{
+            std::cout<<"Przekroczono pamięć maszyny wirtualnej\n";
             valid= false;
         }
     }
@@ -423,6 +424,7 @@ void Program::memoryManagement(){
         if(checkOverflow(prevAddr, memAddr)){
             procedures->procedures[i]->initialAddr = memAddr;
         }else{
+            std::cout<<"Przekroczono pamięć maszyny wirtualnej\n";
             valid= false;
         }
 
@@ -433,6 +435,7 @@ void Program::memoryManagement(){
                 prevAddr = memAddr;
                 memAddr++;
             }else{
+                std::cout<<"Przekroczono pamięć maszyny wirtualnej\n";
                 valid= false;
             }
         }
@@ -442,6 +445,7 @@ void Program::memoryManagement(){
             prevAddr = memAddr;
             memAddr++;
         }else{
+            std::cout<<"Przekroczono pamięć maszyny wirtualnej\n";
             valid= false;
         }
 
@@ -458,6 +462,7 @@ void Program::memoryManagement(){
                 prevAddr=memAddr;
                 memAddr+=1+varsProc[j]->offset;
             }else{
+                std::cout<<"Przekroczono pamięć maszyny wirtualnej\n";
                 valid= false;
             }
         }

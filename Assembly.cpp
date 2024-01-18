@@ -26,9 +26,11 @@ void Architecture::buildNum(unsigned long long number, int where){
 }
 
 void Architecture::returnMerger(){
-    LowInstruction* merger = new LowInstruction();
+    std::cout<<"HANDLING RETURN\n";
+    ReturnMerger* merger = new ReturnMerger();
     merger->index = counter;
     merger->inst = "MERGER";
+    currBlock->merger = merger;
     currBlock->instr.push_back(merger);
 }
 
@@ -62,13 +64,15 @@ void Architecture::div(){
     strk(H);
     jump("/");
     clearAll();
+    get(G);
 }
 
 void Architecture::mod(){
     storeAll();
     strk(H);
-    jump("%");
+    jump("/");
     clearAll();
+    get(B);
 }
 
 void Architecture::read(){

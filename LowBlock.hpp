@@ -16,6 +16,7 @@ class LowInstruction{
 public:
     std::string inst;
     int index;
+    virtual void toString();
 };
 
 // class Builder: public LowInstruction{
@@ -37,33 +38,43 @@ public:
 // };
 
 class ReturnMerger: public LowInstruction{
-
+    void toString();
 };
 
 class Jumper: public LowInstruction{
 public:
     LowInstruction* jumpTo;
+
+    virtual int test();
 };
 
 class JPos: public Jumper{
 public:
     bool condition;
+
+    int test();
 };
 class JZero: public Jumper{
 public:
     bool condition;
+
+    int test();
 };
 
 class Jump: public Jumper{
 public:
     std::string where;
+
+    int test();
 };
 
 class LowLevelBlock{
 public:
+    bool visited;
     int index;
     bool isCond;
     bool returning;
+    ReturnMerger* merger;
     std::vector<LowInstruction*> instr;
     std::vector<Jumper*> jumpers;
     LowLevelBlock* next;
@@ -106,6 +117,8 @@ public:
 
 class Architecture{
 public:
+    bool isMult = false;
+    bool isDiv = false;
     unsigned long long counter;
     std::vector<Value*> garbageCollector;
 
@@ -196,6 +209,10 @@ public:
     //if in main, instrutuon HALT
     //if in procedure, dump only callable vars, build return addres, load, jump
     void handleReturn(); 
+    void generateDiv();
+    void generateMult();
+
+    void link(LowLevelBlock* block);
 };
 
 
