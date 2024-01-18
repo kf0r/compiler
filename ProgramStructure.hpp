@@ -20,14 +20,11 @@ public:
 
     bool validateCallMain(Procedure_call* call);
     bool validateCallProc(Procedure_call* call, Procedure* current);
-    bool semantic();
-    bool memoryManagement();
     static bool compareOffsets(Variable* a, Variable* b);
     bool checkOverflow(unsigned long long prevAddr, unsigned long long newAddr);
     void generateBB();
     void printBBs();
 
-    ////////////////////////////////////////////////////////////////////////////
 
     void semanticBis();
     void procedureRedeclarations(); 
@@ -35,7 +32,7 @@ public:
     void DFS(Program_part* programPart);
     void reset(Program_part* programPart);
     void BFS(Program_part* part);
-
+    void memoryManagement();
     void validateVariableUsage(Program_part* part, Identifier* identifier);
     void validateCall(Program_part* part, Procedure_call* call);
     void insertSymbol(Program_part* programPart, Identifier* id);
@@ -45,9 +42,6 @@ public:
     void setInitialized(Program_part* part, Identifier* id);
     void setUsage(Program_part* part, Identifier* id);
     void checkInitialisations(Program_part* part, Identifier* id);
-
-   // bool checkInitialisations(Program_part* part, Identifier* id);
-    void setAdresses();
 
 };
 

@@ -3,6 +3,8 @@
 #include <iostream>
 #include <list>
 
+unsigned long long MAXSIZE = 4611686018427387904;
+
 void Program::procedureRedeclarations(){
     for(int i=0; i<procedures->procedures.size();i++){
         Procedure* current = procedures->procedures[i];
@@ -315,7 +317,7 @@ bool Program::validateCallMain(Procedure_call* call){
     for(int i=0; i<proceduresTable[call->name]->head->args->argsVec.size(); i++){
         Identifier* inCalled = proceduresTable[call->name]->head->args->argsVec[i];
         Identifier* given = call->args->argsVec[i];
-        std::cout<<inCalled->val<<std::endl;
+        //std::cout<<inCalled->val<<std::endl;
         Variable* varInCalled = proceduresTable[call->name]->callableTable[inCalled->val];
         Variable* varGiven;
 
@@ -358,6 +360,9 @@ void Program::semanticBis(){
     DFS(main);
     reset(main);
     BFS(main);
+
+    memoryManagement();
+
 }
 
 void Program::generateBB(){
@@ -374,5 +379,87 @@ void Program::printBBs(){
     for(int i=0; i<procedures->procedures.size();i++){
         std::cout<<"\nPROCEDURE "<<procedures->procedures[i]->head->name<<std::endl;
         BBs->print(BBs->procedureBBs[procedures->procedures[i]->head->name]);
+    }
+}
+
+bool Program::compareOffsets( Variable* a, Variable* b) {
+    return a->offset < b->offset;
+}
+
+bool Program::checkOverflow(unsigned long long prevAddr, unsigned long long newAddr){
+    if(prevAddr>newAddr){
+        return false;
+    }
+    if(newAddr>MAXSIZE){
+        return false;
+    }
+    return true;
+}
+
+void Program::memoryManagement(){
+    unsigned long long memAddr=0;
+    unsigned long long prevAddr=0;
+    std::vector<Variable*> vars;
+    for (const auto& entry : main->symbolTable) {
+        vars.push_back(entry.second);
+    }
+    std::sort(vars.begin(), vars.end(), compareOffsets);
+
+    //////////////MAIN MEMORY MANAGEMENT//////////////
+
+    for(int i=0; i<vars.size();i++){
+        if(checkOverflow(prevAddr, memAddr)){
+            vars[i]->adress = memAddr;
+            prevAddr=memAddr;
+            memAddr+=1+vars[i]->offset;
+        }else{
+            valid= false;
+        }
+    }
+
+    ///////////PROCEDURAL MEMORY MANAGEMENT///////////
+
+    for(int i=0;i<procedures->procedures.size();i++){
+        if(checkOverflow(prevAddr, memAddr)){
+            procedures->procedures[i]->initialAddr = memAddr;
+        }else{
+            valid= false;
+        }
+
+        for(int j=0;j<procedures->procedures[i]->head->args->argsVec.size();j++){                    
+            if(checkOverflow(prevAddr, memAddr)){
+                std::string arg = procedures->procedures[i]->head->args->argsVec[j]->val;
+                procedures->procedures[i]->callableTable[arg]->adress = memAddr;
+                prevAddr = memAddr;
+                memAddr++;
+            }else{
+                valid= false;
+            }
+        }
+
+        if(checkOverflow(prevAddr, memAddr)){
+            procedures->procedures[i]->retAddr = memAddr;
+            prevAddr = memAddr;
+            memAddr++;
+        }else{
+            valid= false;
+        }
+
+        std::vector<Variable*> varsProc;
+        for (const auto& entry : procedures->procedures[i]->symbolTable) {
+            varsProc.push_back(entry.second);
+        }
+
+        std::sort(varsProc.begin(), varsProc.end(), compareOffsets);
+
+        for(int j=0; j<varsProc.size();j++){
+            if(checkOverflow(prevAddr, memAddr)){
+                varsProc[j]->adress = memAddr;
+                prevAddr=memAddr;
+                memAddr+=1+varsProc[j]->offset;
+            }else{
+                valid= false;
+            }
+        }
     }
 }

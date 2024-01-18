@@ -75,7 +75,7 @@ void Architecture::storeReturn(){
     Procedure* proc = dynamic_cast<Procedure*>(programPart);
     for(int i=1;i<6;i++){
         Value* stored= regs[i].stored;
-        if(proc->callableTable[stored->val]){
+        if(proc->callableTable.find(stored->val)!=proc->callableTable.end()){
             if(regs[i].changed){
                 buildAddress(regs[i].stored, H);
                 get(i);
@@ -380,7 +380,7 @@ bool Architecture::isCallable(Value* val){
         return false;
     }else{
         Procedure* procedure = dynamic_cast<Procedure*>(programPart);
-        if(procedure->callableTable[val->val]){
+        if(procedure->callableTable.find(val->val)!=procedure->callableTable.end()){
             return true;
         }
         return false;

@@ -1219,9 +1219,9 @@ yyreduce:
                         std::cout<<"Kompilacja zakonczona niepowodzeniem";
                     }else{
                         program->generateBB();
-                        program->printBBs();
-                    //     LowLevelProgram* lowProgram = new LowLevelProgram(program);
-                    //     lowProgram->translate();
+                        //program->printBBs();
+                        LowLevelProgram* lowProgram = new LowLevelProgram(program);
+                        lowProgram->translate();
                     }
                     // if(program->semantic()){
                     //     program->generateBB();
