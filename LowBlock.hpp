@@ -36,6 +36,10 @@ public:
 //     int rightTarget;
 // };
 
+class ReturnMerger: public LowInstruction{
+
+};
+
 class Jumper: public LowInstruction{
 public:
     LowInstruction* jumpTo;
@@ -50,12 +54,18 @@ public:
     bool condition;
 };
 
+class Jump: public Jumper{
+public:
+    std::string where;
+};
+
 class LowLevelBlock{
 public:
     int index;
     bool isCond;
     bool returning;
     std::vector<LowInstruction*> instr;
+    std::vector<Jumper*> jumpers;
     LowLevelBlock* next;
     LowLevelBlock* nextElse;
 };
@@ -90,10 +100,13 @@ public:
 //to build address of x, we still have register "h", but theres no way to build or load z and add it to h to store x[z], because "a" contains changed variable
 //to escape this issue we put f. Now register a is free to build addresses to free register.
 
-//sorry for my english its 1AM and its not my native language xd.
+//sorry for my english its 1AM and its not my native language xd
+
+//can be optimised to only stored changed variables in b,c,d,e,f, and store cached vars in g,h.
 
 class Architecture{
 public:
+    unsigned long long counter;
     std::vector<Value*> garbageCollector;
 
     LowLevelBlock* currBlock;
@@ -109,6 +122,7 @@ public:
 
     void storeAll();
     void storeReturn();
+    void clearExplicit(int reg);
     void clearAll();
 
     int getVal(Value* val);

@@ -31,6 +31,7 @@ Architecture::Architecture(Program_part* part) : programPart(part) {
         regs[i].locked=false;
         regs[i].stored=nullptr;
     }
+    counter = 0;
 }
 
 void Architecture::setBlock(LowLevelBlock* block){
@@ -84,6 +85,15 @@ void Architecture::storeReturn(){
             }
         }
     }
+}
+
+void Architecture::clearExplicit(int reg){
+    if(regs[reg].changed){
+        buildAddress(regs[reg].stored, H);
+        get(reg);
+        store(H);
+    }
+    regs[reg].freeRegister();
 }
 
 void Architecture::clearAll(){
@@ -423,7 +433,7 @@ void LowLevelProgram::handleAssign(Assignment* assing){
             arch->getInto(B, comp->left);
             arch->regs[C].locked = false;
 
-            arch->storeAll();
+            //arch->storeAll();
             if(comp->operand=="/"){
                 arch->div();
             }else if(comp->operand=="%"){
@@ -431,7 +441,7 @@ void LowLevelProgram::handleAssign(Assignment* assing){
             }else if(comp->operand=="*"){
                 arch->mult();
             }
-            arch->clearAll();
+            //arch->clearAll();
         }
 
         //we left some omptimisation possibiliteis like check if we can multiply by bitshifting etc
