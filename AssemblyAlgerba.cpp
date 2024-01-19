@@ -29,7 +29,7 @@ void LowLevelProgram::generateMult(){
     dynamic_cast<JZero*>(multBlock->instr[1])->jumpTo=multBlock->instr[18];
     dynamic_cast<JZero*>(multBlock->instr[4])->jumpTo=multBlock->instr[18];
     dynamic_cast<JZero*>(multBlock->instr[9])->jumpTo=multBlock->instr[13];
-    dynamic_cast<JPos*>(multBlock->instr[16])->jumpTo=multBlock->instr[10];
+    dynamic_cast<JPos*>(multBlock->instr[16])->jumpTo=multBlock->instr[5];
 
     proceduresBlock.insert(std::pair<std::string, LowLevelBlock*> ("*", multBlock));
 }

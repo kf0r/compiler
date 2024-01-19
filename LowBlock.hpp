@@ -16,7 +16,7 @@ class LowInstruction{
 public:
     std::string inst;
     int index;
-    virtual void toString();
+    virtual std::string toString();
 };
 
 // class Builder: public LowInstruction{
@@ -38,12 +38,14 @@ public:
 // };
 
 class ReturnMerger: public LowInstruction{
-    void toString();
+    std::string toString();
 };
 
 class Jumper: public LowInstruction{
 public:
     LowInstruction* jumpTo;
+
+    virtual std::string toString();
 
     virtual int test();
 };
@@ -59,6 +61,7 @@ public:
     bool condition;
 
     int test();
+
 };
 
 class Jump: public Jumper{
@@ -70,7 +73,7 @@ public:
 
 class LowLevelBlock{
 public:
-    bool visited;
+    bool visited=false;
     int index;
     bool isCond;
     bool returning;
@@ -213,8 +216,12 @@ public:
     void generateMult();
 
     void setReturns(LowLevelBlock* lowBlock, Block* block);
-
     void link(LowLevelBlock* block);
+
+    void generateAssembly();
+
+    void getMachineCode(std::vector<LowInstruction*>& instructions, LowLevelBlock* block);
+    static bool compareIndexes(LowInstruction* a, LowInstruction* b);
 };
 
 

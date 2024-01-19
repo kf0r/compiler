@@ -121,7 +121,7 @@ void LowLevelProgram::handleCond(Condition* cond){
         arch->jpos(true);
         arch->jzero(false);
 
-    }else if(cond->operand=="=="){
+    }else if(cond->operand=="="){
         int rightReg = arch->getVal(right);
         arch->regs[rightReg].locked = true;
 
@@ -192,7 +192,7 @@ void LowLevelProgram::setReturns(LowLevelBlock* lowBlock, Block* block){
 }
 
 LowLevelBlock* LowLevelProgram::generateLowBB(Block* block){
-    std::cout<<"generating lowBB: "<<block->index<<std::endl;
+   // std::cout<<"generating lowBB: "<<block->index<<std::endl;
     if(block->visited){
         return mapBlock[block->index];
     }
@@ -252,6 +252,7 @@ void LowLevelProgram::translate(){
         //std::cout<<name<<std::endl;
         link(proceduresBlock[name]);
     }
+    generateAssembly();
 }
 
 void LowLevelProgram::link(LowLevelBlock* block){
@@ -259,7 +260,7 @@ void LowLevelProgram::link(LowLevelBlock* block){
     stack.push(block);
     while(!stack.empty()){
         LowLevelBlock* top = stack.top();
-        std::cout<<top->index<<std::endl;
+        //std::cout<<top->index<<std::endl;
         top->visited=true;
         stack.pop();
         for(int i=0;i<top->jumpers.size();i++){
@@ -278,6 +279,7 @@ void LowLevelProgram::link(LowLevelBlock* block){
                     }
                 }else{
                     if(top->nextElse){
+                        std::cout<<top->index<<std::endl;
                         jpos->jumpTo = top->next->instr[0];
                     }else if(top->merger){
                         jpos->jumpTo = top->merger;
@@ -319,3 +321,44 @@ void LowLevelProgram::link(LowLevelBlock* block){
     }
 }
 
+void LowLevelProgram::generateAssembly(){
+    std::vector<LowInstruction*> assembly;
+    getMachineCode(assembly, mainBlock);
+    for(auto pair:proceduresBlock){
+        getMachineCode(assembly, pair.second);
+    }
+    std::sort(assembly.begin(), assembly.end(), compareIndexes);
+    for(int i=0;i<assembly.size();i++){
+        std::cout<<assembly[i]->toString()<<std::endl;
+    }
+}
+
+void LowLevelProgram::getMachineCode(std::vector<LowInstruction*>& instructions, LowLevelBlock* block){
+    std::stack<LowLevelBlock*> stack;
+    stack.push(block);
+    while(!stack.empty()){
+        LowLevelBlock* top = stack.top();
+       // std::cout<<top->index<<std::endl;
+        stack.pop();
+        top->visited=false;
+        for(int i=0;i<top->instr.size();i++){
+            if(!dynamic_cast<ReturnMerger*>(top->instr[i])){
+                instructions.push_back(top->instr[i]);
+            }
+        }
+        if(top->next!=nullptr){
+            if(top->next->visited){
+                stack.push(top->next);
+            }
+        }
+        if(top->nextElse!=nullptr){
+            if(top->nextElse->visited){
+                stack.push(top->nextElse);
+            }
+        }
+    }
+}
+
+bool LowLevelProgram::compareIndexes(LowInstruction* a, LowInstruction* b){
+    return a->index < b->index;
+}

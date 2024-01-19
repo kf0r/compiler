@@ -1,5 +1,6 @@
 #include "LowBlock.hpp"
 
+int ASCII_a = 97;
 ////////////////////////////////////////////////////////////////
 //
 //Register
@@ -20,33 +21,32 @@ void Register::freeRegister(){
 //
 //LowBlocks
 ////////////////////////////////////////////////////////////////
-void LowInstruction::toString(){
-    std::cout<<"1";
+std::string LowInstruction::toString(){
+    return inst;
 }
 
-void ReturnMerger::toString(){
-    std::cout<<"2";
+std::string ReturnMerger::toString(){
+    return "MERGER (it shouldnt be visible)";
+}
+
+std::string Jumper::toString(){
+    std::string toRet = inst+std::to_string(jumpTo->index);
+    return toRet;
 }
 
 int Jumper::test(){
-    std::cout<<"3";
+    return 1;
+}
+int Jump::test(){
+    return 2;
+}
+int JPos::test(){
     return 3;
 }
-
 int JZero::test(){
-    std::cout<<"4";
     return 4;
 }
 
-int JPos::test(){
-    std::cout<<"5";
-    return 5;
-}
-
-int Jump::test(){
-    std::cout<<"6";
-    return 6;
-}
 ////////////////////////////////////////////////////////////////
 //
 //Architecture
@@ -257,7 +257,9 @@ void Architecture::getIntoA(Value* val){
         }
     }
     buildAddress(val,0);
-    load(A);
+    if(!dynamic_cast<Number*>(val)){
+        load(A);
+    }
     return;
 }
 

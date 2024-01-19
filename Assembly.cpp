@@ -11,8 +11,8 @@ void Architecture::buildNum(unsigned long long number, int where){
             break;
         }
     }
+    rst(where);
     if(index==64){
-        rst(where);
         return;
     }
     index++;
@@ -26,7 +26,7 @@ void Architecture::buildNum(unsigned long long number, int where){
 }
 
 void Architecture::returnMerger(){
-    std::cout<<"HANDLING RETURN\n";
+    //std::cout<<"HANDLING RETURN\n";
     ReturnMerger* merger = new ReturnMerger();
     merger->index = counter;
     merger->inst = "MERGER";
@@ -86,7 +86,7 @@ void Architecture::read(){
 void Architecture::write(){
     LowInstruction* write = new LowInstruction();
     write->index = counter;
-    write->inst = "READ";
+    write->inst = "WRITE";
     counter++;
     currBlock->instr.push_back(write);
 }
@@ -226,7 +226,7 @@ void Architecture::jpos(bool cond){
 void Architecture::haltMain(){
     LowInstruction* halt = new LowInstruction();
     halt->index = counter;
-    halt->inst = "halt ";
+    halt->inst = "HALT ";
     counter++;
     currBlock->instr.push_back(halt);
 }

@@ -1219,7 +1219,7 @@ yyreduce:
                         std::cout<<"Kompilacja zakonczona niepowodzeniem";
                     }else{
                         program->generateBB();
-                        program->printBBs();
+                        //program->printBBs();
                         program->BBs->reset();
                         LowLevelProgram* lowProgram = new LowLevelProgram(program);
                         
