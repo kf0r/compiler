@@ -197,21 +197,25 @@ void Architecture::storePostcheck(Identifier* id){
 
 int Architecture::getBestFree(){
     for(int i=1; i<6; i++){
+        std::cout<<"Reg "<<static_cast<char>(97+i)<<" is free\n";
         if(regs[i].stored!=nullptr){
             return i;
         }
     }
     for(int i=1;i<6;i++){
         if(!regs[i].locked&&!regs[i].changed){
+            std::cout<<"Reg "<<static_cast<char>(97+i)<<" isnt changed so freeing it\n";
             regs[i].freeRegister();
             return i;
         }
     }
     for(int i=1;i<6;i++){
         if(!regs[i].locked){
+            std::cout<<"Reg "<<static_cast<char>(97+i)<<" is changed so storing it\n";
             buildAddress(regs[i].stored, 7);
             get(i);
             store(H);
+            regs[i].freeRegister();
             return i;
         }
     }
@@ -222,13 +226,13 @@ int Architecture::getBestFree(){
 int Architecture::getVal(Value* val){
     for(int i=1; i<6;i++){
         if(isSameVal(val, regs[i].stored)){
+            std::cout<<"Gettign same val as "<<regs[i].stored->val<<std::endl;
             return i;
         }
     }
     int bestIndex = getBestFree();
-    getIntoA(val);
+    getInto(bestIndex, val);
 
-    put(bestIndex);
     return bestIndex;
 }
 

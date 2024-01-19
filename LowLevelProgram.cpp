@@ -122,10 +122,12 @@ void LowLevelProgram::handleCond(Condition* cond){
         arch->jzero(false);
 
     }else if(cond->operand=="="){
+        std::cout<<"LOOOKING FOR val "<< right->val<<std::endl;
         int rightReg = arch->getVal(right);
         arch->regs[rightReg].locked = true;
-
+        std::cout<<"LOCKED REG: "<<static_cast<char>(rightReg+97)<<" with va "<< right->val<<std::endl;
         int leftReg = arch->getVal(left);
+        std::cout<<"Putting val "<<cond->leftVal->val<<" into REG: "<<static_cast<char>(leftReg+97)<<std::endl;
         arch->regs[rightReg].locked = false;
         arch->get(leftReg);
         arch->sub(rightReg);
@@ -194,7 +196,10 @@ void LowLevelProgram::setReturns(LowLevelBlock* lowBlock, Block* block){
 LowLevelBlock* LowLevelProgram::generateLowBB(Block* block){
    // std::cout<<"generating lowBB: "<<block->index<<std::endl;
     if(block->visited){
+        std::cout<<block->index<<std::endl;
+       std::cout<<"low block index from map: "<<mapBlock[block->index]->index<<std::endl;
         return mapBlock[block->index];
+        
     }
     LowLevelBlock* lowBlock = new LowLevelBlock();
     arch->setBlock(lowBlock);
@@ -218,7 +223,12 @@ LowLevelBlock* LowLevelProgram::generateLowBB(Block* block){
     block->visited = true;
     mapBlock.insert(std::pair<int, LowLevelBlock*> (lowBlock->index, lowBlock));
     setReturns(lowBlock,block);
-    arch->dumpAll();
+    if(!isCond){
+        if(block->ifTrue!=nullptr){
+            arch->dumpAll();
+            arch->jump("NEXTBLOCK");
+        }
+    }
     if(block->ifFalse!=nullptr){
         lowBlock->nextElse=generateLowBB(block->ifFalse);
     }
@@ -266,7 +276,11 @@ void LowLevelProgram::link(LowLevelBlock* block){
         for(int i=0;i<top->jumpers.size();i++){
             if(dynamic_cast<Jump*>(top->jumpers[i])){
                 Jump* jump = dynamic_cast<Jump*>(top->jumpers[i]);
-                jump->jumpTo = proceduresBlock[jump->where]->instr[0];
+                if(jump->where!="NEXTBLOCK"){
+                    jump->jumpTo = proceduresBlock[jump->where]->instr[0];
+                }else{
+                    jump->jumpTo = top->next->instr[0];
+                }
             }else if(dynamic_cast<JPos*>(top->jumpers[i])){
                 JPos* jpos = dynamic_cast<JPos*>(top->jumpers[i]);
                 if(jpos->condition){
@@ -280,7 +294,7 @@ void LowLevelProgram::link(LowLevelBlock* block){
                 }else{
                     if(top->nextElse){
                         std::cout<<top->index<<std::endl;
-                        jpos->jumpTo = top->next->instr[0];
+                        jpos->jumpTo = top->nextElse->instr[0];
                     }else if(top->merger){
                         jpos->jumpTo = top->merger;
                     }else{
@@ -299,7 +313,7 @@ void LowLevelProgram::link(LowLevelBlock* block){
                     }
                 }else{
                     if(top->nextElse){
-                        jzero->jumpTo = top->next->instr[0];
+                        jzero->jumpTo = top->nextElse->instr[0];
                     }else if(top->merger){
                         jzero->jumpTo = top->merger;
                     }else{
@@ -307,6 +321,9 @@ void LowLevelProgram::link(LowLevelBlock* block){
                     }
                 }
             }
+        }
+        if(!top->isCond){
+
         }
         if(top->next!=nullptr){
             if(!top->next->visited){
