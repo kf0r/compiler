@@ -328,7 +328,7 @@ void Architecture::buildAddress(Value* val, int where){
             Procedure* proc = dynamic_cast<Procedure*>(programPart);
             buildNum(proc->callableTable[array->val]->adress, 0);
             load(A);
-            load(A);
+            //load(A);
             put(H);
             Number* number = new Number();
             garbageCollector.push_back(number);
@@ -346,7 +346,7 @@ void Architecture::buildAddress(Value* val, int where){
         }else{
             IndentifierArrNumber* array = dynamic_cast<IndentifierArrNumber*>(val);
             buildNum(programPart->symbolTable[array->val]->adress, 0);
-            load(A);
+            //load(A);
             put(H);
             Number* number = new Number();
             garbageCollector.push_back(number);
@@ -369,7 +369,7 @@ void Architecture::buildAddress(Value* val, int where){
             IndentifierArrPid* array = dynamic_cast<IndentifierArrPid*>(val);
             buildNum(proc->callableTable[array->val]->adress, 0);
             load(A);
-            load(A);
+            //load(A);
             put(H);
             Identifier* id = new Identifier();
             garbageCollector.push_back(id);
@@ -388,7 +388,7 @@ void Architecture::buildAddress(Value* val, int where){
         }else{
             IndentifierArrPid* array = dynamic_cast<IndentifierArrPid*>(val);
             buildNum(programPart->symbolTable[array->val]->adress, 0);
-            load(A);
+            //load(A);
             put(H);
             Identifier* id = new Identifier();
             garbageCollector.push_back(id);
