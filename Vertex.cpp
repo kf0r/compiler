@@ -28,13 +28,27 @@ std::string Instruction::print(){
     return "EMPTY INSTRUCTION\n";
 }
 
+bool Instruction::isConditional(){
+    return false;
+}
+
+bool Instruction::isMerger(){
+    return false;
+}
 ///////////////////////////////////////////////
 //MERGER
 ///////////////////////////////////////////////
 std::string Merger::print(){
-    return "MERGER\n";
+    std::string toRet="MERGER ";
+    toRet.push_back(static_cast<char>(97+mergIndex));
+    toRet+="\n";
+    return toRet;
 }
 
+
+bool Merger::isMerger(){
+    return true;
+}
 ///////////////////////////////////////////////
 //CONDITIONAL SIMPLE
 ///////////////////////////////////////////////
@@ -65,6 +79,9 @@ std::string ConditionalSimple::print(){
    return "CONDITION " + cond->leftVal->val + cond->operand + cond->rightVal->val+":\n";
 }
 
+bool ConditionalSimple::isConditional(){
+    return true;
+}
 ///////////////////////////////////////////////
 //CONDITIONAL
 ///////////////////////////////////////////////
@@ -182,11 +199,15 @@ LinkedCommands::LinkedCommands(){
 void LinkedCommands::addInst(Instruction* inst){
     if(head!=nullptr){
         tail->next = inst;
+        //std::cout<<"ADDING INST LIST:"<<inst->print();
         while(inst->next!=nullptr){
+             //std::cout<<"WALKING THROUGHT INST LIST:"<<inst->print();
             inst = inst->next;
         }
+        //std::cout<<"TAIL:"<<inst->print();
         tail = inst;
     }else{
+        //std::cout<<"ADDING INST HEAD NULL:"<<inst->print();
         head = inst;
         tail = head;
     }
@@ -197,6 +218,9 @@ Instruction* LinkedCommands::getHead(){
 }
 
 Instruction* LinkedCommands::getTail(){
+    while(tail->next!=nullptr){
+        tail = tail->next;
+    }
     return this->LinkedCommands::tail;
 }
 

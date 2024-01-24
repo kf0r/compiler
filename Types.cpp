@@ -24,6 +24,7 @@ bool Identifier::isArray(){
 }
 
 unsigned long long Identifier::getOffset(){
+    
     return 0;
 }
 

@@ -1,6 +1,8 @@
 #include "./ProgramStructure.hpp"
 #include <stack>
 #include <iostream>
+#include <thread>
+#include <chrono>
 #include <list>
 
 unsigned long long MAXSIZE = 4611686018427387904;
@@ -465,6 +467,23 @@ void Program::memoryManagement(){
                 std::cout<<"Przekroczono pamięć maszyny wirtualnej\n";
                 valid= false;
             }
+        }
+    }
+}
+
+void Program::printAdresses(){
+    std::cout<<"MAIN variables:\n";
+    for(auto pair : main->symbolTable){
+        std::cout<<pair.first<<" -> "<<pair.second->adress<<std::endl;
+    }
+    for(int i=0;i<procedures->procedures.size();i++){
+        std::cout<<procedures->procedures[i]->head->name<<" symbols:\n";
+        for(auto pair : procedures->procedures[i]->symbolTable){
+            std::cout<<pair.first<<" -> "<<pair.second->adress<<std::endl;
+        }
+        std::cout<<procedures->procedures[i]->head->name<<" callable:\n";
+        for(auto pair : procedures->procedures[i]->callableTable){
+            std::cout<<pair.first<<" -> "<<pair.second->adress<<std::endl;
         }
     }
 }

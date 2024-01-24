@@ -8,6 +8,7 @@ LowLevelProgram::LowLevelProgram(Program* whole){
 //if we assign a=b-c we have to check for x[a] in registers
 void LowLevelProgram::handleAssign(Assignment* assing){
     Expression* expression = assing->expression;
+    //std::cout<<"PRECHECKING "<<assing->identifier->val<<std::endl;
     arch->storePrecheck(assing->identifier);
     if(dynamic_cast<ExprComplex*>(expression)){
         ExprComplex* comp = dynamic_cast<ExprComplex*>(expression);
@@ -122,12 +123,12 @@ void LowLevelProgram::handleCond(Condition* cond){
         arch->jzero(false);
 
     }else if(cond->operand=="="){
-        std::cout<<"LOOOKING FOR val "<< right->val<<std::endl;
+        //std::cout<<"LOOOKING FOR val "<< right->val<<std::endl;
         int rightReg = arch->getVal(right);
         arch->regs[rightReg].locked = true;
-        std::cout<<"LOCKED REG: "<<static_cast<char>(rightReg+97)<<" with va "<< right->val<<std::endl;
+        //std::cout<<"LOCKED REG: "<<static_cast<char>(rightReg+97)<<" with va "<< right->val<<std::endl;
         int leftReg = arch->getVal(left);
-        std::cout<<"Putting val "<<cond->leftVal->val<<" into REG: "<<static_cast<char>(leftReg+97)<<std::endl;
+        //std::cout<<"Putting val "<<cond->leftVal->val<<" into REG: "<<static_cast<char>(leftReg+97)<<std::endl;
         arch->regs[rightReg].locked = false;
         arch->get(leftReg);
         arch->sub(rightReg);
@@ -170,8 +171,10 @@ void LowLevelProgram::handleReturn(){
     if(dynamic_cast<Procedure*>(arch->programPart)){
         Procedure* proc = dynamic_cast<Procedure*>(arch->programPart);
         arch->returnMerger();
+        arch->storeReturn();
         arch->buildNum(proc->retAddr, A);
         arch->load(A);
+        arch->inc(A);
         arch->inc(A);
         arch->inc(A);
         arch->jumpr(A);
@@ -196,8 +199,8 @@ void LowLevelProgram::setReturns(LowLevelBlock* lowBlock, Block* block){
 LowLevelBlock* LowLevelProgram::generateLowBB(Block* block){
    // std::cout<<"generating lowBB: "<<block->index<<std::endl;
     if(block->visited){
-        std::cout<<block->index<<std::endl;
-       std::cout<<"low block index from map: "<<mapBlock[block->index]->index<<std::endl;
+        //std::cout<<block->index<<std::endl;
+        //std::cout<<"low block index from map: "<<mapBlock[block->index]->index<<std::endl;
         return mapBlock[block->index];
         
     }

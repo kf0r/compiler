@@ -11,7 +11,7 @@
     extern int yylex();
     extern int yyparse();
     int yyerror(std::string s);
-
+    int mergIndexGlobal=0;
 %}
 
 
@@ -173,15 +173,21 @@ program_all: procedures main {
                     program->procedures = $1;
                     $$=program;
                     program->semanticBis();
+                    
                     if(!program->valid){
                         std::cout<<"Kompilacja zakonczona niepowodzeniem";
                     }else{
                         program->generateBB();
                         program->printBBs();
                         program->BBs->reset();
+                        // program->BBs->DFSbis(program->procedures->procedures[0]->comms->getHead());
+                        // std::cout<<"\nDFSING RECURSIVELY :DDDDDDD\n";
+                        // program->BBs->DFStres(program->procedures->procedures[0]->comms->getHead());
+                        // std::cout<<"END DFSING RECURSIVELY :DDDDDDD\n";
                         LowLevelProgram* lowProgram = new LowLevelProgram(program);
                         
                         lowProgram->translate();
+                        program->printAdresses();
                     }
                     // if(program->semantic()){
                     //     program->generateBB();
@@ -247,19 +253,22 @@ command:    identifier ASSIGN expression SEMICOLON {
             | IF condition THEN commands ELSE commands ENDIF {
                     Conditional *conditional = new Conditional();
                     Merger *merger = new Merger();
+                    merger->mergIndex = mergIndexGlobal;
+                    mergIndexGlobal++;
                     conditional->cond = $2;
                     conditional->nextIfTrue = $4->getHead();
                     conditional->nextIfFalse = $6->getHead();
-                    
+                    conditional->next = merger;
                     $4->getTail()->next = merger;
                     $6->getTail()->next = merger;
-                    conditional->next = merger;
                     $$ = conditional;
                 }
             | IF condition THEN commands ENDIF {
                     ConditionalSimple *simp = new ConditionalSimple();
                     simp->cond = $2;
                     Merger *merger = new Merger();
+                    merger->mergIndex = mergIndexGlobal;
+                    mergIndexGlobal++;
                     simp->nextIfTrue = $4->getHead();
                     simp->next = merger;
                     $4->getTail()->next = merger;
@@ -269,17 +278,24 @@ command:    identifier ASSIGN expression SEMICOLON {
                     ConditionalWhile *loop = new ConditionalWhile();
                     loop->cond = $2;
                     Merger *mergerEntry = new Merger();
-                    Merger *mergerExit = new Merger();
+                    mergerEntry->mergIndex = mergIndexGlobal;
+                    mergIndexGlobal++;
+                    //Merger *mergerExit = new Merger();
                     mergerEntry->next = loop;
                     loop->nextIfTrue = $4->getHead();
                     $4->getTail()->next = mergerEntry;
-                    loop->next = mergerExit;
+                    //loop->next = mergerExit;
+
                     $$ = mergerEntry;
                 }
             | REPEAT commands UNTIL condition SEMICOLON {
                     ConditionalRepeat *loop = new ConditionalRepeat();
                     Merger *mergerEntry = new Merger();
+                    mergerEntry->mergIndex = mergIndexGlobal;
+                    mergIndexGlobal++;
                     Merger *mergerExit = new Merger();
+                    mergerEntry->mergIndex = mergIndexGlobal;
+                    mergIndexGlobal++;
                     loop->cond = $4;
                     mergerEntry->next = $2->getHead();
                     $2->getTail()->next = loop;
@@ -482,6 +498,7 @@ value:      NUM {
 identifier: PIDENTIFIER {
                     Identifier* ident = new Identifier();
                     ident->val = *$1.str;
+                    //std::cout<<ident->val<<std::endl;
                     $$=ident;
                 }
             | PIDENTIFIER LSQ NUM RSQ {
@@ -494,6 +511,7 @@ identifier: PIDENTIFIER {
                     IndentifierArrPid* ident = new IndentifierArrPid();
                     ident->val = *$1.str;
                     ident->address = *$3.str;
+                    //std::cout<<ident->val<<ident->address<<std::endl;
                     $$ = ident;
                 }
 ;

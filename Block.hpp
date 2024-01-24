@@ -27,7 +27,7 @@ public:
 
 class BlockRepresentation{
 public:
-    std::map<int, Block*> blockMap;
+    std::map<Instruction*, Block*> blockMap;
     Block* initialBlock;
     std::map<std::string, Block*> procedureBBs;
     int blockIndexes=0;
@@ -37,6 +37,8 @@ public:
     void addProcedureBB(Instruction* first, std::string name);
     void print(Block* starting);
     void reset();
+    void DFSbis(Instruction* inst);
+    void DFStres(Instruction* current);
 };
 
 #endif

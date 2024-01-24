@@ -42,7 +42,7 @@ public:
     void setInitialized(Program_part* part, Identifier* id);
     void setUsage(Program_part* part, Identifier* id);
     void checkInitialisations(Program_part* part, Identifier* id);
-
+    void printAdresses();
 };
 
 #endif

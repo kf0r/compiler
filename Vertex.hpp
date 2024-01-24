@@ -11,28 +11,33 @@ class Instruction{
 public:
     Instruction();
     bool visited = false; //variable for DFS during semantic analisys
-    bool isConditional = false;
-    int blockIndex = -1;
+    
+    int blockIndex = 0;
     unsigned int index;
     Instruction* next;
 
-
+    virtual bool isConditional();
     virtual bool isCall();
+    virtual bool isMerger();
     virtual std::vector<Identifier*> getVars();
     virtual std::vector<Instruction*> getNext();
     virtual std::string print();
 };
 
 class Merger: public Instruction{
+public:
+    int mergIndex;
     std::string print();
+    bool isMerger();
 };
 
 class ConditionalSimple: public Instruction{
 public:
-    bool isConditional = true;
+    
     Instruction* nextIfTrue;
     Condition* cond;
 
+    virtual bool isConditional();
     std::vector<Identifier*> getVars();
     virtual std::vector<Instruction*> getNext();
     virtual std::string print();
