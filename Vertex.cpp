@@ -209,7 +209,12 @@ void LinkedCommands::addInst(Instruction* inst){
     }else{
         //std::cout<<"ADDING INST HEAD NULL:"<<inst->print();
         head = inst;
-        tail = head;
+        while(inst->next!=nullptr){
+             //std::cout<<"WALKING THROUGHT INST LIST:"<<inst->print();
+            inst = inst->next;
+        }
+        //std::cout<<"TAIL:"<<inst->print();
+        tail = inst;
     }
 }
 
@@ -218,10 +223,22 @@ Instruction* LinkedCommands::getHead(){
 }
 
 Instruction* LinkedCommands::getTail(){
+    std::cout<<"GETTING TAIL: "<<tail->print();
+    return this->LinkedCommands::tail;
+}
+
+void LinkedCommands::setTail(Instruction* inst){
     while(tail->next!=nullptr){
         tail = tail->next;
     }
-    return this->LinkedCommands::tail;
+    tail -> next = inst;
+    tail = inst;
+    std::cout<<"SETTING TAIL: "<<tail->print();
+}
+
+void LinkedCommands::setHead(Instruction* inst){
+    inst->next = head;
+    head = inst;
 }
 
 ///////////////////////////////////////////////

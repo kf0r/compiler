@@ -99,7 +99,9 @@ public:
     Instruction* tail;
 
     LinkedCommands();
-    void addInst(Instruction* inst); //Przejsc po nextach inst az bedzie null i ten bedzie tailem 
+    void addInst(Instruction* inst); 
+    void setTail(Instruction* inst);
+    void setHead(Instruction* inst);
     Instruction* getHead();
     Instruction* getTail(); 
 };

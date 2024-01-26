@@ -173,17 +173,19 @@ program_all: procedures main {
                     program->procedures = $1;
                     $$=program;
                     program->semanticBis();
+                    std::cout<<"SEMANTIC END\n";
                     
                     if(!program->valid){
                         std::cout<<"Kompilacja zakonczona niepowodzeniem";
                     }else{
                         program->generateBB();
+                        std::cout<<"BB END\n";
                         program->printBBs();
                         program->BBs->reset();
-                        // program->BBs->DFSbis(program->procedures->procedures[0]->comms->getHead());
-                        // std::cout<<"\nDFSING RECURSIVELY :DDDDDDD\n";
-                        // program->BBs->DFStres(program->procedures->procedures[0]->comms->getHead());
-                        // std::cout<<"END DFSING RECURSIVELY :DDDDDDD\n";
+                        program->BBs->DFSbis(program->procedures->procedures[0]->comms->getHead());
+                        std::cout<<"\nDFSING RECURSIVELY :DDDDDDD\n";
+                        program->BBs->DFStres(program->procedures->procedures[0]->comms->getHead());
+                        std::cout<<"END DFSING RECURSIVELY :DDDDDDD\n";
                         LowLevelProgram* lowProgram = new LowLevelProgram(program);
                         
                         lowProgram->translate();
@@ -235,10 +237,34 @@ main:       PROGRAM IS declarations IN commands END {
                 }
 ;
 commands:   commands command {
+                    if(dynamic_cast<Merger*>($2)){
+                        Instruction* merger = dynamic_cast<Merger*>($2);
+                        std::cout<<"ADDING MERGER TO LIST, NEXTS INST:\n";
+                        while(merger!=nullptr){
+                            std::cout<<merger->print();
+                            merger=merger->next;
+                        }
+                    }
                     $1->addInst($2);
                     $$ = $1;
+                    Instruction* ptr = $$->getHead();
+                    std::cout<<"PRINTING LIST NEXTS:\n";
+                    while(ptr!=nullptr){
+                        std::cout<<ptr->print();
+                        ptr=ptr->next;
+                    }
+                    std::cout<<"END PRINTING LIST NEXTS:\n";
                 }
             | command {
+                    if(dynamic_cast<Merger*>($1)){
+                        Instruction* merger = dynamic_cast<Merger*>($1);
+                        std::cout<<"MERGER IS FIRST INST, NEXTS INST:\n";
+                        while(merger!=nullptr){
+                            std::cout<<merger->print();
+                            merger=merger->next;
+                        }
+                    }
+                    std::cout<<"FIRST IN LIST:"<<$1->print();
                     LinkedCommands *linkedCommand = new LinkedCommands();
                     linkedCommand->addInst($1);
                     $$ = linkedCommand;
@@ -250,61 +276,67 @@ command:    identifier ASSIGN expression SEMICOLON {
                     assign->identifier = $1;
                     $$ = assign;
                 }
-            | IF condition THEN commands ELSE commands ENDIF {
-                    Conditional *conditional = new Conditional();
-                    Merger *merger = new Merger();
+            | WHILE condition DO commands ENDWHILE {
+                    Merger* merger = new Merger();
                     merger->mergIndex = mergIndexGlobal;
                     mergIndexGlobal++;
-                    conditional->cond = $2;
-                    conditional->nextIfTrue = $4->getHead();
-                    conditional->nextIfFalse = $6->getHead();
-                    conditional->next = merger;
-                    $4->getTail()->next = merger;
-                    $6->getTail()->next = merger;
-                    $$ = conditional;
+                    ConditionalWhile* cond = new ConditionalWhile();
+                    cond->cond = $2;
+                    merger->next = cond;
+                    cond->nextIfTrue = $4->getHead();
+                    
+                    $4->setTail(merger);
+                    //$4->head = merger;
+                    //$4->getTail();
+                    
+                    $$=merger;
+                    std::cout<<"WHLIE TESTING NEXTS:"<<$$->print()<<$$->next->print();
+                }
+            | IF condition THEN commands ELSE commands ENDIF {
+                    Conditional* cond = new Conditional();
+                    cond->cond = $2;
+                    Merger* merger = new Merger();
+                    merger->mergIndex = mergIndexGlobal;
+                    mergIndexGlobal++;
+                    cond->nextIfTrue = $4->getHead();
+                    cond->nextIfFalse = $6->getHead();
+                    $4->setTail(merger);
+                    $6->setTail(merger);
+                    cond->next=merger;
+                    $4->getTail();
+                    $$ = cond;
                 }
             | IF condition THEN commands ENDIF {
-                    ConditionalSimple *simp = new ConditionalSimple();
-                    simp->cond = $2;
-                    Merger *merger = new Merger();
+                    ConditionalSimple* cond = new ConditionalSimple();
+                    Merger* merger = new Merger();
                     merger->mergIndex = mergIndexGlobal;
                     mergIndexGlobal++;
-                    simp->nextIfTrue = $4->getHead();
-                    simp->next = merger;
-                    $4->getTail()->next = merger;
-                    $$ = simp;
-                }
-            | WHILE condition DO commands ENDWHILE {
-                    ConditionalWhile *loop = new ConditionalWhile();
-                    loop->cond = $2;
-                    Merger *mergerEntry = new Merger();
-                    mergerEntry->mergIndex = mergIndexGlobal;
-                    mergIndexGlobal++;
-                    //Merger *mergerExit = new Merger();
-                    mergerEntry->next = loop;
-                    loop->nextIfTrue = $4->getHead();
-                    $4->getTail()->next = mergerEntry;
-                    //loop->next = mergerExit;
-
-                    $$ = mergerEntry;
+                    cond->cond = $2;
+                    cond->nextIfTrue = $4->getHead();
+                    $4->setTail(merger);
+                    $4->getTail();
+                    $4->head = cond;
+                    
+                    cond->next = merger;
+                    std::cout<<"IF AND MERGER:"<<cond->print()<<cond->next->print();
+                    $$ = cond;
                 }
             | REPEAT commands UNTIL condition SEMICOLON {
-                    ConditionalRepeat *loop = new ConditionalRepeat();
-                    Merger *mergerEntry = new Merger();
-                    mergerEntry->mergIndex = mergIndexGlobal;
+                    Merger* merger = new Merger();
+                    merger->mergIndex = mergIndexGlobal;
                     mergIndexGlobal++;
-                    Merger *mergerExit = new Merger();
-                    mergerEntry->mergIndex = mergIndexGlobal;
+                    Merger* exit = new Merger();
+                    exit->mergIndex = mergIndexGlobal;
                     mergIndexGlobal++;
-                    loop->cond = $4;
-                    mergerEntry->next = $2->getHead();
-                    $2->getTail()->next = loop;
-                    // to keep walking on linked list simple. It will be ignored in next steps
-                    loop->next = mergerExit;
-                    //loop is until, so goes on if condition isnt met
-                    loop->nextIfTrue = mergerExit;
-                    loop->nextIfFalse = mergerEntry;
-                    $$ = mergerEntry;
+
+                    ConditionalRepeat* cond = new ConditionalRepeat();
+                    cond->cond = $4;
+                    $2->setHead(merger);
+                    $2->setTail(cond);
+                    cond->nextIfFalse = merger;
+                    cond->nextIfTrue = exit;
+                    cond->next = exit;
+                    $$=merger;
                 }
             | proc_call SEMICOLON {
                     $$ = $1;

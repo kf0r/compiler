@@ -127,7 +127,7 @@ void BlockRepresentation::DFSbis(Instruction* current){
 
 Block* BlockRepresentation::DFS(Instruction* inst){
     if(inst==nullptr){
-        //std::cout<<"INSTRUCTION WAS NULLPTR\n";
+        std::cout<<"INSTRUCTION WAS NULLPTR\n";
         return nullptr;
     }
     while(inst->isMerger()){
@@ -137,13 +137,13 @@ Block* BlockRepresentation::DFS(Instruction* inst){
         }
     }
     if(blockMap.find(inst)!=blockMap.end()){
-        //std::cout<<"ALREADY IN"<<inst->print();
+        std::cout<<"ALREADY IN"<<inst->print();
         return blockMap[inst];
     }
     Block* block = new Block();
     block->index = blockIndexes;
     blockIndexes++;
-    //std::cout<<"INITIAL INSTRUCTION IN BLOCK: "<<inst->print();
+    std::cout<<"INITIAL INSTRUCTION IN BLOCK: "<<inst->print();
     block->inst.push_back(inst);
     blockMap.insert(std::pair<Instruction*, Block*>(inst, block));
     while(!inst->isConditional()){
@@ -153,7 +153,7 @@ Block* BlockRepresentation::DFS(Instruction* inst){
         }else if(inst->isMerger()){
             break;
         }
-        //std::cout<<inst->print();
+        std::cout<<inst->print();
         block->inst.push_back(inst);
     }
     if(inst->isConditional()){

@@ -370,8 +370,10 @@ void Program::semanticBis(){
 void Program::generateBB(){
     BBs = new BlockRepresentation();
     BBs->setBB(main->comms->head);
+    std::cout<<"GENERATED MAIN\n";
     for(int i=0; i<procedures->procedures.size();i++){
         BBs->addProcedureBB(procedures->procedures[i]->comms->getHead(), procedures->procedures[i]->head->name);
+        std::cout<<"GENERATED PROC"<<procedures->procedures[i]->head->name<<std::endl;
     }
 }
 

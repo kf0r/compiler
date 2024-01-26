@@ -204,7 +204,7 @@ void Architecture::storePostcheck(Identifier* id){
 int Architecture::getBestFree(){
     for(int i=1; i<6; i++){
         //std::cout<<"Reg "<<static_cast<char>(97+i)<<" is free\n";
-        if(regs[i].stored!=nullptr){
+        if(regs[i].stored==nullptr){
             return i;
         }
     }
