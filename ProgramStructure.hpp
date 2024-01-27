@@ -3,6 +3,7 @@
 
 #include "./Vertex.hpp"
 #include "./Block.hpp"
+#include <algorithm>
 #include <iostream>
 #include <string>
 #include <vector>

@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <stack>
+#include <bitset>
 #include "./Block.hpp"
 #include "./Vertex.hpp"
 #include "./ProgramStructure.hpp"
