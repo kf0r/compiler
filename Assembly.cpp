@@ -55,6 +55,8 @@ void Architecture::sub(int right){
 void Architecture::mult(){
     clearExplicit(G);
     clearExplicit(F);
+    clearExplicit(C);
+    clearExplicit(B);
     strk(H);
     jump("*");
 }

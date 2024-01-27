@@ -182,10 +182,10 @@ program_all: procedures main {
                         std::cout<<"BB END\n";
                         program->printBBs();
                         program->BBs->reset();
-                        program->BBs->DFSbis(program->procedures->procedures[0]->comms->getHead());
-                        std::cout<<"\nDFSING RECURSIVELY :DDDDDDD\n";
-                        program->BBs->DFStres(program->procedures->procedures[0]->comms->getHead());
-                        std::cout<<"END DFSING RECURSIVELY :DDDDDDD\n";
+                        //program->BBs->DFSbis(program->procedures->procedures[0]->comms->getHead());
+                        //std::cout<<"\nDFSING RECURSIVELY :DDDDDDD\n";
+                        //program->BBs->DFStres(program->procedures->procedures[0]->comms->getHead());
+                        //std::cout<<"END DFSING RECURSIVELY :DDDDDDD\n";
                         LowLevelProgram* lowProgram = new LowLevelProgram(program);
                         
                         lowProgram->translate();
