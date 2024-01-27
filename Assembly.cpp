@@ -26,7 +26,7 @@ void Architecture::buildNum(unsigned long long number, int where){
 }
 
 void Architecture::returnMerger(){
-    //std::cout<<"HANDLING RETURN\n";
+    //std::cout<<"krzysztof fornal\n";
     ReturnMerger* merger = new ReturnMerger();
     merger->index = counter;
     merger->inst = "MERGER";

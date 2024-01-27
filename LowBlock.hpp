@@ -99,7 +99,7 @@ public:
 
 //sorry for my english its 1AM and its not my native language xd
 
-//can be optimised to only stored changed variables in b,c,d,e,f, and store cached vars in g,h.
+//can be optimised to only stored changed variables in b,c,d,e,f, and store cached vars in g,h. 
 
 class Architecture{
 public:
@@ -184,7 +184,7 @@ public:
 
     LowLevelProgram(Program* whole);
     LowLevelBlock* generateLowBB(Block* block);
-    void translate();
+    std::vector<std::string> translate();
 
     void handleAssign(Assignment* assign);
     void handleRead(Read* read);
@@ -201,7 +201,7 @@ public:
     void setReturns(LowLevelBlock* lowBlock, Block* block);
     void link(LowLevelBlock* block);
 
-    void generateAssembly();
+    std::vector<std::string> generateAssembly();
 
     void getMachineCode(std::vector<LowInstruction*>& instructions, LowLevelBlock* block);
     static bool compareIndexes(LowInstruction* a, LowInstruction* b);

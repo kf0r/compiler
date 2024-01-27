@@ -330,7 +330,7 @@ bool Program::validateCallMain(Procedure_call* call){
             return false;
         }
         if(varInCalled->isOffsettable){
-            //We get indeksed array, so not array, but element of an array, so error.
+            //We get indeksed array, so not array, but element of an array, so error. krzysztof fornal
             if(given->isArray()){
                 std::cout<<"Funkcja "<<call->name<<" oczekuje tablicy, a dostała element tablicy "<<given->val<<std::endl;
                 return false; 

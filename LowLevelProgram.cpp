@@ -231,7 +231,7 @@ LowLevelBlock* LowLevelProgram::generateLowBB(Block* block){
     return lowBlock;
 }
 
-void LowLevelProgram::translate(){
+std::vector<std::string> LowLevelProgram::translate(){
     mainBlock = generateLowBB(program->BBs->initialBlock);
     arch->forceClear();
     for(int i=0;i<program->procedures->procedures.size();i++){
@@ -253,7 +253,7 @@ void LowLevelProgram::translate(){
         std::string name = program->procedures->procedures[i]->head->name;
         link(proceduresBlock[name]);
     }
-    generateAssembly();
+    return generateAssembly();
 }
 
 void LowLevelProgram::link(LowLevelBlock* block){
@@ -283,7 +283,7 @@ void LowLevelProgram::link(LowLevelBlock* block){
                     }
                 }else{
                     if(top->nextElse){
-                        std::cout<<top->index<<std::endl;
+                        //std::cout<<top->index<<std::endl;
                         jpos->jumpTo = top->nextElse->instr[0];
                     }else if(top->merger){
                         jpos->jumpTo = top->merger;
@@ -313,7 +313,7 @@ void LowLevelProgram::link(LowLevelBlock* block){
             }
         }
         if(!top->isCond){
-
+            //i dont remember what i wanted to do here 
         }
         if(top->next!=nullptr){
             if(!top->next->visited){
@@ -328,16 +328,20 @@ void LowLevelProgram::link(LowLevelBlock* block){
     }
 }
 
-void LowLevelProgram::generateAssembly(){
+std::vector<std::string> LowLevelProgram::generateAssembly(){
     std::vector<LowInstruction*> assembly;
+    std::vector<std::string> code;
     getMachineCode(assembly, mainBlock);
     for(auto pair:proceduresBlock){
         getMachineCode(assembly, pair.second);
     }
     std::sort(assembly.begin(), assembly.end(), compareIndexes);
     for(int i=0;i<assembly.size();i++){
-        std::cout<<assembly[i]->toString()<<std::endl;
+
+        //std::cout<<assembly[i]->toString()<<std::endl;
+        code.push_back(assembly[i]->toString());
     }
+    return code;
 }
 
 void LowLevelProgram::getMachineCode(std::vector<LowInstruction*>& instructions, LowLevelBlock* block){

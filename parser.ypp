@@ -1,5 +1,6 @@
 %{    
     #include <iostream>
+    #include <fstream>
     #include <string>
     #include <map>
     #include <vector>
@@ -8,10 +9,13 @@
     #include "parser.tab.hpp"
     #include "ProgramStructure.hpp"
     #include "./LowBlock.hpp"
+    bool valid = false;
+    extern FILE *yyin;
     extern int yylex();
     extern int yyparse();
     int yyerror(std::string s);
     int mergIndexGlobal=0;
+    std::vector<std::string> code;
 %}
 
 
@@ -172,8 +176,9 @@ program_all: procedures main {
                     program->main = $2;
                     program->procedures = $1;
                     $$=program;
+
                     program->semanticBis();
-                    
+                    valid = program->valid;
                     if(!program->valid){
                         std::cout<<"Kompilacja zakonczona niepowodzeniem";
                     }else{
@@ -182,8 +187,7 @@ program_all: procedures main {
 
                         LowLevelProgram* lowProgram = new LowLevelProgram(program);
                         
-                        lowProgram->translate();
-                        program->printAdresses();
+                        code = lowProgram->translate();
                     }
                 }
 ;
@@ -513,7 +517,34 @@ int yyerror(std::string s) {
     std::cerr << "Error: " << s << std::endl;
 }
 
-int main() {
-    yyparse();
+int compile(const char* in_file, const char* out_file)
+{
+    yyin = fopen(in_file, "r");
+    const int ret = yyparse();
+    fclose(yyin);
+
+    if(valid){
+        std::ofstream outstream;
+        outstream.open(out_file);
+        for (const std::string& str : code) {
+            outstream << str << std::endl;
+        }
+        outstream.close();
+    }else{
+        return 1;
+    }
+
+    return ret;
+}
+
+int main(int argc, char *argv[]) {
+
+    if (argc < 3)
+    {
+        std::cout<<"uzycie: <plik wejsciowy> <plik wyjsciowy>";
+        return 1;
+    }
+
+    return compile(argv[1], argv[2]);
     return 0;
 }

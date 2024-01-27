@@ -1,5 +1,5 @@
 
-TARGET = compiler
+TARGET = kompilator
 
 CXX = g++
 

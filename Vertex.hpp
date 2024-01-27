@@ -55,7 +55,7 @@ class ConditionalWhile: public ConditionalSimple{
 };
 
 class ConditionalRepeat: public Conditional{
-    //std::string print();
+    //std::string print(); krzysztof fornal
 
 };
 

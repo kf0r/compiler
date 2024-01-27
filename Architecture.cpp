@@ -127,9 +127,9 @@ void Architecture::clearExplicit(int reg){
 
 void Architecture::clearAll(){
     for(int i=1;i<6;i++){
-        if(regs[i].changed){
-            std::cout<<"\033[31;1;4mFAULT\033[0m CLEARING REGISTER WITH CHANGED VALUES: "<<regs[i].stored->val<<"\n";
-        }
+        // if(regs[i].changed){
+        //     std::cout<<"\033[31;1;4mFAULT\033[0m CLEARING REGISTER WITH CHANGED VALUES: "<<regs[i].stored->val<<"\n";
+        // }
         if(regs[i].locked){
             std::cout<<"\033[31;1;4mFAULT\033[0m CLEARING LOCKED REGISTER\n";
         }
