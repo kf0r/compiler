@@ -20,24 +20,6 @@ public:
     virtual std::string toString();
 };
 
-// class Builder: public LowInstruction{
-// public:
-//     unsigned long long numberBuild;
-// };
-
-// class Multiplier: public LowInstruction{
-// public:
-//     int rightTarget;
-// };
-// class Modulator: public LowInstruction{
-// public:
-//     int rightTarget;
-// };
-// class Divider: public LowInstruction{
-// public:
-//     int rightTarget;
-// };
-
 class ReturnMerger: public LowInstruction{
     std::string toString();
 };

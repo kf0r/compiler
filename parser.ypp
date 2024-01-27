@@ -173,32 +173,18 @@ program_all: procedures main {
                     program->procedures = $1;
                     $$=program;
                     program->semanticBis();
-                    //std::cout<<"SEMANTIC END\n";
                     
                     if(!program->valid){
                         std::cout<<"Kompilacja zakonczona niepowodzeniem";
                     }else{
                         program->generateBB();
-                        //std::cout<<"BB END\n";
-                        //program->printBBs();
                         program->BBs->reset();
-                        //program->BBs->DFSbis(program->procedures->procedures[0]->comms->getHead());
-                        //std::cout<<"\nDFSING RECURSIVELY :DDDDDDD\n";
-                        //program->BBs->DFStres(program->procedures->procedures[0]->comms->getHead());
-                        //std::cout<<"END DFSING RECURSIVELY :DDDDDDD\n";
+
                         LowLevelProgram* lowProgram = new LowLevelProgram(program);
                         
                         lowProgram->translate();
                         program->printAdresses();
                     }
-                    // if(program->semantic()){
-                    //     program->generateBB();
-                    //     //program->printBBs();
-                    //     LowLevelProgram* lowProgram = new LowLevelProgram(program);
-                    //     lowProgram->translate();
-                    // }else{
-                    //     std::cout<<"Kompilacja zakonczona niepowodzeniem";
-                    // }
                 }
 ;
 procedures: procedures PROCEDURE proc_head IS declarations IN commands END {
@@ -230,7 +216,7 @@ main:       PROGRAM IS declarations IN commands END {
                 }
             | PROGRAM IS IN commands END {
                     Main* main = new Main();
-                    //Declaration* dec = new Declaration();
+                    
                     main->decs = nullptr;
                     main->comms = $4;
                     $$=main;
@@ -240,7 +226,6 @@ commands:   commands command {
                     $1->addInst($2);
                     $$ = $1;
                     Instruction* ptr = $$->getHead();
-                    //std::cout<<"PRINTING LIST NEXTS:\n";
                 }
             | command {
                     LinkedCommands *linkedCommand = new LinkedCommands();
@@ -264,11 +249,8 @@ command:    identifier ASSIGN expression SEMICOLON {
                     cond->nextIfTrue = $4->getHead();
                     
                     $4->setTail(merger);
-                    //$4->head = merger;
-                    //$4->getTail();
-                    
                     $$=merger;
-                    //std::cout<<"WHLIE TESTING NEXTS:"<<$$->print()<<$$->next->print();
+
                 }
             | IF condition THEN commands ELSE commands ENDIF {
                     Conditional* cond = new Conditional();
@@ -296,7 +278,7 @@ command:    identifier ASSIGN expression SEMICOLON {
                     $4->head = cond;
                     
                     cond->next = merger;
-                    //std::cout<<"IF AND MERGER:"<<cond->print()<<cond->next->print();
+
                     $$ = cond;
                 }
             | REPEAT commands UNTIL condition SEMICOLON {
@@ -508,7 +490,7 @@ value:      NUM {
 identifier: PIDENTIFIER {
                     Identifier* ident = new Identifier();
                     ident->val = *$1.str;
-                    //std::cout<<ident->val<<std::endl;
+
                     $$=ident;
                 }
             | PIDENTIFIER LSQ NUM RSQ {
@@ -521,7 +503,7 @@ identifier: PIDENTIFIER {
                     IndentifierArrPid* ident = new IndentifierArrPid();
                     ident->val = *$1.str;
                     ident->address = *$3.str;
-                    //std::cout<<ident->val<<ident->address<<std::endl;
+
                     $$ = ident;
                 }
 ;

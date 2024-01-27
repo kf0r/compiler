@@ -53,8 +53,6 @@ int JZero::test(){
 ////////////////////////////////////////////////////////////////
 Architecture::Architecture(Program_part* part) : programPart(part) {
     for (int i = 0; i < 8; i++) {
-        // Register* reg = new Register();
-        // regs[i] = *reg;
         regs[i].index=i;
         regs[i].changed=false;
         regs[i].locked=false;
@@ -105,10 +103,6 @@ void Architecture::storeReturn(){
     Procedure* proc = dynamic_cast<Procedure*>(programPart);
     for(int i=1;i<6;i++){
         Value* stored= regs[i].stored;
-        // std::cout<<stored->val<<std::endl;
-        // if(stored->val==""){
-        //     std::cout<<"EMPTY!!!"<<std::endl;
-        // }
         if(stored!=nullptr){
         if(proc->callableTable.find(stored->val)!=proc->callableTable.end()){
             if(regs[i].changed){
@@ -203,21 +197,18 @@ void Architecture::storePostcheck(Identifier* id){
 
 int Architecture::getBestFree(){
     for(int i=1; i<6; i++){
-        //std::cout<<"Reg "<<static_cast<char>(97+i)<<" is free\n";
         if(regs[i].stored==nullptr){
             return i;
         }
     }
     for(int i=1;i<6;i++){
         if(!regs[i].locked&&!regs[i].changed){
-            //std::cout<<"Reg "<<static_cast<char>(97+i)<<" isnt changed so freeing it\n";
             regs[i].freeRegister();
             return i;
         }
     }
     for(int i=1;i<6;i++){
         if(!regs[i].locked){
-            //std::cout<<"Reg "<<static_cast<char>(97+i)<<" is changed so storing it\n";
             buildAddress(regs[i].stored, 7);
             get(i);
             store(H);
@@ -232,12 +223,10 @@ int Architecture::getBestFree(){
 int Architecture::getVal(Value* val){
     for(int i=1; i<6;i++){
         if(isSameVal(val, regs[i].stored)){
-            //std::cout<<"Gettign same val as "<<regs[i].stored->val<<std::endl;
             return i;
         }
     }
     int bestIndex = getBestFree();
-    //std::cout<<"BEST FREE for "<<val->val<<" IS "<<bestIndex<<std::endl;
     getInto(bestIndex, val);
 
     return bestIndex;
@@ -248,10 +237,8 @@ void Architecture::getInto(int i, Value* val){
         std::cout<<"\033[31;1;4mFAULT\033[0m STORING INTO LOCKED REGISTER\n";
     }
     if(isSameVal(val, regs[i].stored)){
-        //std::cout<<val->val<<" = "<<regs[i].stored->val<<std::endl;
         return;
     }
-    ////////corner case with sth 
     if(!regs[i].changed||regs[i].stored==nullptr){
         regs[i].freeRegister();
     }else{
@@ -326,15 +313,12 @@ int Architecture::putModifiedVal(Value* val){
 }
 
 void Architecture::buildAddress(Value* val, int where){
-    //std::cout<<"BUILDING ADDRESS OF "<<val->val<<std::endl;
     if(dynamic_cast<IndentifierArrNumber*>(val)){
-       //std::cout<<"ARRAY NUMBERED: "<<val->val<<std::endl;
         if(isCallable(val)){
             IndentifierArrNumber* array = dynamic_cast<IndentifierArrNumber*>(val);
             Procedure* proc = dynamic_cast<Procedure*>(programPart);
             buildNum(proc->callableTable[array->val]->adress, 0);
             load(A);
-            //load(A);
             put(H);
             Number* number = new Number();
             garbageCollector.push_back(number);
@@ -352,7 +336,6 @@ void Architecture::buildAddress(Value* val, int where){
         }else{
             IndentifierArrNumber* array = dynamic_cast<IndentifierArrNumber*>(val);
             buildNum(programPart->symbolTable[array->val]->adress, 0);
-            //load(A);
             put(H);
             Number* number = new Number();
             garbageCollector.push_back(number);
@@ -375,7 +358,6 @@ void Architecture::buildAddress(Value* val, int where){
             IndentifierArrPid* array = dynamic_cast<IndentifierArrPid*>(val);
             buildNum(proc->callableTable[array->val]->adress, 0);
             load(A);
-            //load(A);
             put(H);
             Identifier* id = new Identifier();
             garbageCollector.push_back(id);
@@ -394,7 +376,6 @@ void Architecture::buildAddress(Value* val, int where){
         }else{
             IndentifierArrPid* array = dynamic_cast<IndentifierArrPid*>(val);
             buildNum(programPart->symbolTable[array->val]->adress, 0);
-            //load(A);
             put(H);
             Identifier* id = new Identifier();
             garbageCollector.push_back(id);
@@ -412,7 +393,6 @@ void Architecture::buildAddress(Value* val, int where){
             //load a
         }
     }else if(dynamic_cast<Identifier*>(val)){
-        //std::cout<<"NORMAL VAR "<<val->val<<std::endl;
         if(isCallable(val)){
             Procedure* proc = dynamic_cast<Procedure*>(programPart);
             buildNum(proc->callableTable[val->val]->adress, 0);
@@ -430,7 +410,6 @@ void Architecture::buildAddress(Value* val, int where){
             //build addres in a
         }
     }else if(dynamic_cast<Number*>(val)){
-        //std::cout<<"NUMBER: "<<val->val<<std::endl;
         buildNum(std::stoull(val->val), where);
     }else{
         //std::cout<<"SOMETHING WEIRD: "<<val->val<<std::endl;

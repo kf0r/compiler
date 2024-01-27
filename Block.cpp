@@ -29,60 +29,6 @@ void BlockRepresentation::addProcedureBB(Instruction* first, std::string name){
     procedureBBs.insert(std::pair<std::string, Block*>(name, DFS(first)));
 }
 
-// Block* BlockRepresentation::DFS(Instruction* current){
-//     if(current==nullptr){
-//         return nullptr;
-//     }
-//     std::cout<<current->print();
-//     while(current->isMerger()){
-//         //std::cout<<current->index<<std::endl;
-//         std::cout<<"MERGER: "<<current->print()<<std::endl;
-//         current = current->next;
-//         if(current==nullptr){
-//             return nullptr;
-//         }
-//     }
-//    // std::cout<<current->index<<std::endl;
-//     if(blockMap.find(current)!=blockMap.end()){
-//         std::cout<<"IN BLOCK ALREADY: "<<blockMap[current]->inst[0]->print()<<std::endl;
-//         return blockMap[current];
-//     }else{
-//         std::cout<<"NEW INST: "<<current->print()<<std::endl;
-//     }
-
-//     Block* block = new Block();
-    
-//     blockIndexes++;
-//     current->blockIndex = blockIndexes;
-//     block->index = blockIndexes;
-//     std::cout<<current->print();
-//     blockMap.insert(std::pair<Instruction*, Block*>(current, block));
-
-//     while(!current->isMerger()&&!current->isConditional()){
-//         block->inst.push_back(current);
-//         current = current->next;
-//         if(current==nullptr){
-//             return block;
-//         }
-//     }
-//     if(dynamic_cast<Merger*> (current)){
-//         block->ifTrue = DFS(current->next);
-//         //std::cout<<"NEW: "<<blockMap[current]->inst[0]->print()<<std::endl;
-//     }else if(dynamic_cast<ConditionalSimple*> (current)){
-//         ConditionalSimple* simp = dynamic_cast<ConditionalSimple*> (current);
-//         block->inst.push_back(simp);
-//         if(dynamic_cast<Conditional*> (simp)){
-//             Conditional* cond = dynamic_cast<Conditional*> (simp);
-//             block->ifTrue = DFS(cond->nextIfTrue);
-//             block->ifFalse = DFS(cond->nextIfFalse);
-//         }else{
-//             block->ifTrue = DFS(simp->nextIfTrue);
-//             block->ifFalse = DFS(simp->next);
-//         }
-//     }
-//     return block;
-// }
-
 void BlockRepresentation::DFStres(Instruction* current){
     current->visited=true;
     for(int i=0;i<current->getNext().size();i++){
@@ -115,10 +61,8 @@ void BlockRepresentation::DFSbis(Instruction* current){
                 }
                 else{ 
                     std::cout<<top->print()<<"already visited->"<<top->getNext()[i]->print();
-                    //std::cout<<"ALREADY VISITED: "<<top->getNext()[i]->print();
                     Instruction* next = top->getNext()[i];
 
-                    //std::cout<<"IT WAS POINTNG TO: "<<next->print();
                 }
         }
     }  
@@ -127,7 +71,6 @@ void BlockRepresentation::DFSbis(Instruction* current){
 
 Block* BlockRepresentation::DFS(Instruction* inst){
     if(inst==nullptr){
-       // std::cout<<"INSTRUCTION WAS NULLPTR\n";
         return nullptr;
     }
     while(inst->isMerger()){
@@ -137,7 +80,6 @@ Block* BlockRepresentation::DFS(Instruction* inst){
         }
     }
     if(blockMap.find(inst)!=blockMap.end()){
-       // std::cout<<"ALREADY IN"<<inst->print();
         return blockMap[inst];
     }
     Block* block = new Block();

@@ -93,24 +93,6 @@ std::vector<Instruction*> Conditional::getNext(){
     return nexts;
 }
 
-// std::string Conditional::print(){
-//     return "IF "+cond->leftVal->val+ cond->operand+cond->rightVal->val+" ELSE: \n";
-// }
-
-///////////////////////////////////////////////
-//CONDITIONAL WHILE
-///////////////////////////////////////////////
-// std::string ConditionalWhile::print(){
-//     return "WHILE "+cond->leftVal->val+cond->operand+cond->rightVal->val+"DO \n";
-// }
-
-///////////////////////////////////////////////
-//CONDITIONAL REPEAT
-///////////////////////////////////////////////
-// std::string ConditionalRepeat::print(){
-//     return "REPEAT UNITL "+cond->leftVal->val+cond->operand+cond->rightVal->val+"DO \n";
-// }
-
 ///////////////////////////////////////////////
 //ASSIGNMENT
 ///////////////////////////////////////////////

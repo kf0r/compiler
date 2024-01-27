@@ -8,7 +8,6 @@ LowLevelProgram::LowLevelProgram(Program* whole){
 //if we assign a=b-c we have to check for x[a] in registers
 void LowLevelProgram::handleAssign(Assignment* assing){
     Expression* expression = assing->expression;
-    //std::cout<<"PRECHECKING "<<assing->identifier->val<<std::endl;
     arch->storePrecheck(assing->identifier);
     if(dynamic_cast<ExprComplex*>(expression)){
         ExprComplex* comp = dynamic_cast<ExprComplex*>(expression);
@@ -31,7 +30,6 @@ void LowLevelProgram::handleAssign(Assignment* assing){
             arch->getInto(B, comp->left);
             arch->regs[C].locked = false;
 
-            //arch->storeAll();
             if(comp->operand=="/"){
                 arch->isDiv = true;
                 arch->div();
@@ -42,7 +40,6 @@ void LowLevelProgram::handleAssign(Assignment* assing){
                 arch->isMult = true;
                 arch->mult();
             }
-            //arch->clearAll();
         }
 
         //we left some omptimisation possibiliteis like check if we can multiply by bitshifting etc
@@ -123,12 +120,9 @@ void LowLevelProgram::handleCond(Condition* cond){
         arch->jzero(false);
 
     }else if(cond->operand=="="){
-        //std::cout<<"LOOOKING FOR val "<< right->val<<std::endl;
         int rightReg = arch->getVal(right);
         arch->regs[rightReg].locked = true;
-        //std::cout<<"LOCKED REG: "<<static_cast<char>(rightReg+97)<<" with va "<< right->val<<std::endl;
         int leftReg = arch->getVal(left);
-        //std::cout<<"Putting val "<<cond->leftVal->val<<" into REG: "<<static_cast<char>(leftReg+97)<<std::endl;
         arch->regs[rightReg].locked = false;
         arch->get(leftReg);
         arch->sub(rightReg);
@@ -139,7 +133,6 @@ void LowLevelProgram::handleCond(Condition* cond){
         arch->jpos(false);
         arch->jzero(true);
     }
-    //std::cout<<"CONDITIONAL: "<<arch->currBlock->index<<std::endl;
     arch->clearAll();
 }
 
@@ -160,7 +153,7 @@ void LowLevelProgram::handleCall(Procedure_call* call){
     arch->strk(A);
     arch->store(G);
 
-    /////////////////////// JUMP TO PROCEDURE SOMEHOW
+    /////////////////////// JUMP TO PROCEDURE
     arch->jump(call->name);
     arch->clearAll();;
 }
@@ -197,12 +190,8 @@ void LowLevelProgram::setReturns(LowLevelBlock* lowBlock, Block* block){
 }
 
 LowLevelBlock* LowLevelProgram::generateLowBB(Block* block){
-   // std::cout<<"generating lowBB: "<<block->index<<std::endl;
     if(block->visited){
-        //std::cout<<block->index<<std::endl;
-        //std::cout<<"low block index from map: "<<mapBlock[block->index]->index<<std::endl;
         return mapBlock[block->index];
-        
     }
     LowLevelBlock* lowBlock = new LowLevelBlock();
     arch->setBlock(lowBlock);
@@ -262,7 +251,6 @@ void LowLevelProgram::translate(){
     link(mainBlock);
     for(int i=0;i<program->procedures->procedures.size();i++){
         std::string name = program->procedures->procedures[i]->head->name;
-        //std::cout<<name<<std::endl;
         link(proceduresBlock[name]);
     }
     generateAssembly();
@@ -273,7 +261,6 @@ void LowLevelProgram::link(LowLevelBlock* block){
     stack.push(block);
     while(!stack.empty()){
         LowLevelBlock* top = stack.top();
-        //std::cout<<top->index<<std::endl;
         top->visited=true;
         stack.pop();
         for(int i=0;i<top->jumpers.size();i++){
@@ -358,7 +345,6 @@ void LowLevelProgram::getMachineCode(std::vector<LowInstruction*>& instructions,
     stack.push(block);
     while(!stack.empty()){
         LowLevelBlock* top = stack.top();
-       // std::cout<<top->index<<std::endl;
         stack.pop();
         top->visited=false;
         for(int i=0;i<top->instr.size();i++){
