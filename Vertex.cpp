@@ -223,7 +223,7 @@ Instruction* LinkedCommands::getHead(){
 }
 
 Instruction* LinkedCommands::getTail(){
-    std::cout<<"GETTING TAIL: "<<tail->print();
+    //std::cout<<"GETTING TAIL: "<<tail->print();
     return this->LinkedCommands::tail;
 }
 
@@ -233,7 +233,7 @@ void LinkedCommands::setTail(Instruction* inst){
     }
     tail -> next = inst;
     tail = inst;
-    std::cout<<"SETTING TAIL: "<<tail->print();
+    //std::cout<<"SETTING TAIL: "<<tail->print();
 }
 
 void LinkedCommands::setHead(Instruction* inst){

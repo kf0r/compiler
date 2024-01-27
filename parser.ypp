@@ -173,14 +173,14 @@ program_all: procedures main {
                     program->procedures = $1;
                     $$=program;
                     program->semanticBis();
-                    std::cout<<"SEMANTIC END\n";
+                    //std::cout<<"SEMANTIC END\n";
                     
                     if(!program->valid){
                         std::cout<<"Kompilacja zakonczona niepowodzeniem";
                     }else{
                         program->generateBB();
-                        std::cout<<"BB END\n";
-                        program->printBBs();
+                        //std::cout<<"BB END\n";
+                        //program->printBBs();
                         program->BBs->reset();
                         //program->BBs->DFSbis(program->procedures->procedures[0]->comms->getHead());
                         //std::cout<<"\nDFSING RECURSIVELY :DDDDDDD\n";
@@ -237,34 +237,12 @@ main:       PROGRAM IS declarations IN commands END {
                 }
 ;
 commands:   commands command {
-                    if(dynamic_cast<Merger*>($2)){
-                        Instruction* merger = dynamic_cast<Merger*>($2);
-                        std::cout<<"ADDING MERGER TO LIST, NEXTS INST:\n";
-                        while(merger!=nullptr){
-                            std::cout<<merger->print();
-                            merger=merger->next;
-                        }
-                    }
                     $1->addInst($2);
                     $$ = $1;
                     Instruction* ptr = $$->getHead();
-                    std::cout<<"PRINTING LIST NEXTS:\n";
-                    while(ptr!=nullptr){
-                        std::cout<<ptr->print();
-                        ptr=ptr->next;
-                    }
-                    std::cout<<"END PRINTING LIST NEXTS:\n";
+                    //std::cout<<"PRINTING LIST NEXTS:\n";
                 }
             | command {
-                    if(dynamic_cast<Merger*>($1)){
-                        Instruction* merger = dynamic_cast<Merger*>($1);
-                        std::cout<<"MERGER IS FIRST INST, NEXTS INST:\n";
-                        while(merger!=nullptr){
-                            std::cout<<merger->print();
-                            merger=merger->next;
-                        }
-                    }
-                    std::cout<<"FIRST IN LIST:"<<$1->print();
                     LinkedCommands *linkedCommand = new LinkedCommands();
                     linkedCommand->addInst($1);
                     $$ = linkedCommand;
@@ -290,7 +268,7 @@ command:    identifier ASSIGN expression SEMICOLON {
                     //$4->getTail();
                     
                     $$=merger;
-                    std::cout<<"WHLIE TESTING NEXTS:"<<$$->print()<<$$->next->print();
+                    //std::cout<<"WHLIE TESTING NEXTS:"<<$$->print()<<$$->next->print();
                 }
             | IF condition THEN commands ELSE commands ENDIF {
                     Conditional* cond = new Conditional();
@@ -318,7 +296,7 @@ command:    identifier ASSIGN expression SEMICOLON {
                     $4->head = cond;
                     
                     cond->next = merger;
-                    std::cout<<"IF AND MERGER:"<<cond->print()<<cond->next->print();
+                    //std::cout<<"IF AND MERGER:"<<cond->print()<<cond->next->print();
                     $$ = cond;
                 }
             | REPEAT commands UNTIL condition SEMICOLON {

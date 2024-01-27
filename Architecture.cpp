@@ -237,15 +237,21 @@ int Architecture::getVal(Value* val){
         }
     }
     int bestIndex = getBestFree();
+    //std::cout<<"BEST FREE for "<<val->val<<" IS "<<bestIndex<<std::endl;
     getInto(bestIndex, val);
 
     return bestIndex;
 }
 
 void Architecture::getInto(int i, Value* val){
+    if(regs[i].locked){
+        std::cout<<"\033[31;1;4mFAULT\033[0m STORING INTO LOCKED REGISTER\n";
+    }
     if(isSameVal(val, regs[i].stored)){
+        //std::cout<<val->val<<" = "<<regs[i].stored->val<<std::endl;
         return;
     }
+    ////////corner case with sth 
     if(!regs[i].changed||regs[i].stored==nullptr){
         regs[i].freeRegister();
     }else{
@@ -254,9 +260,9 @@ void Architecture::getInto(int i, Value* val){
         store(H);
         regs[i].freeRegister();
     }
-    //numbers can be builded directly into i, so can be optimised a bit
     getIntoA(val);
     put(i);
+    regs[i].stored = val;
 }
 
 void Architecture::getIntoA(Value* val){
