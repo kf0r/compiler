@@ -13,5 +13,6 @@ LowLevelProgram.cpp - translation manager, higher level instruction manager.
 ProgramStructure.cpp - semantic analyzer, memory allocator.   
 Types.cpp - methods of types classes, so identifiers, expressions etc.   
 Vertex.cpp - methods of AST vertex classes, so Instructions and inheriting classes, Instruction linked lists, declarations and procedures.   
+Headers contain class and methods definitions.
     
 Krzysztof Fornal, 268433
